@@ -2,7 +2,7 @@
 
 ## Instructions for shiny server
 
-- Open terminal and type `USER@167.71.158.245` 
+- Open terminal and type `ssh USER@167.71.158.245` 
 - If root user and logged in on personal laptop the SSH should be set up.
 Otherwise enter password.
 - Once logged onto the server navigate to the git repo \
