@@ -6,7 +6,7 @@
 - If root user and logged in on personal laptop the SSH should be set up.
 Otherwise enter password.
 - Once logged onto the server navigate to the git repo \
-`cd srv/shiny-server`\
+`cd /srv/shiny-server`\
 `git pull`\
 to get recent updates
 
