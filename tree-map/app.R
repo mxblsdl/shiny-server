@@ -1,7 +1,7 @@
 library(shiny)
 library(shinymaterial)
 library(shinyjs)
-library(darkmode)
+# library(darkmode)
 library(leaflet)
 library(htmlwidgets)
 library(shinipsum)
