@@ -5,7 +5,7 @@ library(shinyjs)
 library(leaflet)
 library(htmlwidgets)
 library(shinipsum)
-library(ggiraph)
+#library(ggiraph)
 
 options(shiny.autoreload = T)
 

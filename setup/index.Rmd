@@ -1,0 +1,19 @@
+---
+title: "My Setup"
+output: html_document
+---
+
+# How I built this
+
+Notes on my process for getting this site up...
+
+1) Shiny server
+  - Dean's blog
+  - updates for R 4
+2) Setup in git
+  - setting up webhooks
+  - mostly using [this blog](https://ansonvandoren.com/posts/deploy-hugo-from-github/)
+  - with some updates on the webhook service 
+  - updates on the working directory
+  - firewall setup
+3) This page was made with R markdown
