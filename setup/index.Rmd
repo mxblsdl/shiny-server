@@ -32,6 +32,7 @@ etc/rstudio/rserver.conf
   - if there is no setting it will default to 1000
   - my shiny user had the UID of 996 which prohibited that user from logging in
   - run `sudo rstudio-server restart` to make sure changes to propagated
+  - **Note on installing packages** some packages have requirements outside of R and will require installation of some linux libraries. This will have to be done by a user who has `sudo` privileges, shiny user probably won't. I found the package install error messages to be helpful in these instances.
 5) Additional fun thing for rstudio login
   - add a `login.html` file to `etc/rstudio/` and this will display additional HTML below the default login page
   - additional CSS can be added here as well 

@@ -7,7 +7,7 @@ library(htmlwidgets)
 library(shinipsum)
 #library(ggiraph)
 
-options(shiny.autoreload = T)
+# options(shiny.autoreload = T)
 
 ui <- material_page(
   # fun darkmode settings
