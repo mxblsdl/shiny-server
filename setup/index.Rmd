@@ -87,4 +87,9 @@ Now you should be able to login as user `shiny`, install packages that will be d
 4) Additional fun thing for RStudio login
   - add a `login.html` file to `etc/rstudio/` and this will display additional HTML below the default login page
   - additional CSS can be added here as well 
-
+  - Make sure to run:
+```{bash}
+sudo rstudio-server restart 
+```
+  
+After making any changes 
