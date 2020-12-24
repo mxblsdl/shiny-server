@@ -1,6 +1,8 @@
 ---
 title: "My Setup"
-output: html_document
+output: 
+  html_document:
+    css: "style.css"
 ---
 ```{r setup, include=F}
 knitr::opts_chunk$set(eval = F)
