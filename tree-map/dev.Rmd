@@ -9,6 +9,11 @@ runtime: shiny
 library(shiny)
 library(shinymaterial)
 library(shinyjs)
+library(sf)
+library(dplyr)
+library(ggplot2)
+library(leaflet)
+library(leaflet.providers)
 
 shinyOptions(shiny.autoreload = T)
 ```
@@ -162,4 +167,170 @@ ui <-
     # native versus non-native
     
   )
+
+server <- function(input, output, session) {
+
+}
+
+runApp(ui, server)
 ```
+
+
+
+```{r}
+library(scales)  
+
+neigh <- read_sf("../tree_map/dat/data.gpkg", layer = "neigh")
+neigh
+
+val <- "trees_per_acre"
+
+neigh %>% 
+  select(!!sym(val)) %>% 
+  arrange(!!sym(val))
+plotf <- function(df, val) {
+  df %>% 
+  as.data.frame() %>% 
+  arrange(desc( !!sym(val) )) %>% 
+  slice(1:5) %>% 
+  mutate(MAPLABEL = factor(MAPLABEL)) %>% 
+ggplot() +
+   geom_bar(aes(x = reorder(MAPLABEL, !!sym(val)) ,
+                y = !!sym(val),
+                fill = !!sym(val)),
+            stat = "identity") +
+  theme_classic() +
+  labs(y = "Number of Trees",
+       x = element_blank()) +
+  scale_y_continuous(labels = comma) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.background = element_rect(fill = '#f7f0d2'),
+        plot.background = element_rect(fill = '#f7f0d2')) +
+  scale_x_discrete(labels = function(x) gsub("d I", 'd\nI', x)) +
+  theme(legend.position = "none")
+}
+plotf(neigh, "trees_per_acre")
+```
+
+
+```{r}
+neigh %>% 
+  as.data.frame() %>% 
+  arrange(desc( !!sym(val) )) %>% 
+  slice(1:5) %>% 
+  mutate(MAPLABEL = factor(MAPLABEL)) %>% 
+ggplot() +
+   geom_bar(aes(x = reorder(MAPLABEL, !!sym(val)) ,
+                y = !!sym(val),
+                fill = !!sym(val)),
+            stat = "identity") +
+  theme_classic() +
+  labs(y = "Number of Trees",
+       x = element_blank()) +
+  scale_y_continuous(labels = comma) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.background = element_rect(fill = '#f7f0d2'),
+        plot.background = element_rect(fill = '#f7f0d2')) +
+  scale_x_discrete(labels = function(x) gsub("d I", 'd\nI', x)) +
+  theme(legend.position = "none")
+```
+
+# from the ev diffusion model
+
+```{r}
+  observe({
+    colorBy <- input$varinput
+    
+    # Set Demographics & Map Display Color to switch input 
+    if (input$`demographics-choice` == FALSE){
+      counties2 <- counties2.ev
+      
+      pal <- colorNumeric(
+        palette = "Greens",
+        domain = c(min(map_data[[colorBy]], map_data_gen[[colorBy]]),
+                   max(map_data[[colorBy]], map_data_gen[[colorBy]]))
+      )
+    } else {
+      counties2 <- counties2.gen
+      
+      pal <- colorNumeric(
+        palette = "Blues",
+        domain = c(min(map_data[[colorBy]], map_data_gen[[colorBy]]),
+                   max(map_data[[colorBy]], map_data_gen[[colorBy]]))
+      )
+    }
+    
+    # get pop up information (updated to sf object)
+    popup <- paste0(
+      "<strong>", counties2[['NAME']], " County", "</strong>", "<br>",
+      namer[, colorBy], ": ",
+      counties2[[colorBy]]
+    )
+    
+    # update map
+    leafletProxy("map_demographics", data = counties2) %>%
+      clearShapes() %>%
+      addPolygons(stroke = TRUE, opacity = 1, weight = 0.7,
+                  smoothFactor = 0.1, color = "gainsboro",
+                  fillOpacity = 0.7,
+                  fillColor = ~pal(get(colorBy)),
+                  popup = popup
+      ) %>%
+      clearControls() %>% 
+      addLegend("bottomright", pal = pal, values = c(min(map_data[[colorBy]], map_data_gen[[colorBy]]),
+                                                     max(map_data[[colorBy]], map_data_gen[[colorBy]])),
+                title = namer[, colorBy],
+                labFormat = labelFormat(prefix = ""),
+                opacity = 0.8
+      ) %>% 
+      addControl(actionButton("helper-demo","?", width = '20px', style = "padding:initial;"), position = "topleft")
+```
+
+
+
+```{r}
+val <- "n_trees"
+val <- "trees_per_acre"
+
+pal <- colorQuantile(palette = 'Blues', 
+                   domain = neigh[[val]], 
+                   n = 5)
+
+l <- leaflet(options = leafletOptions(maxZoom = 20,
+                                     minZoom = 10,
+                                     zoomControl = F)) %>%
+      htmlwidgets::onRender("function(el, x) {
+                          L.control.zoom({position: 'topright'}).addTo(this)
+                          }") %>% 
+      addProviderTiles(providers$CartoDB.Positron, group = "Default") %>%
+  #    addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>% 
+      setView(lng = -122.63,
+              lat = 45.54,
+              zoom = 10) %>%
+      setMaxBounds(lng1 = -122.4,
+                   lat1 = 45.4,
+                   lng2 = -122.8,
+                   lat2 = 45.67)# %>%
+                )
+
+    addPolygons(data = neigh, 
+                stroke = T
+                , weight = 1
+                # use get() here
+                , fillColor = ~pal(get(val))
+                , color = "white"
+                , dashArray = "2"
+                , fillOpacity = 0.7
+                , highlight = highlightOptions(
+                  weight = 5
+                  , color = "#999"
+                  , dashArray = ""
+                  , fillOpacity = .7
+                  , bringToFront = T)
+                #   weight = 5,
+                #   color = "#666",
+                #   dashArray = "",
+                #   fillOpacity = 0.7,
+                #   bringToFront = TRUE)
+```
+
