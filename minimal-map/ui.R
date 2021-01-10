@@ -12,15 +12,13 @@ shinyUI(
     use_waiter(),
     includeCSS("www/styles.css"),
     tags$script(src = "myjs.js"),
+    
     # Application title
     titlePanel("Minimalist Maps"),
     
     with_darkmode(autoMatchOsTheme = F,
-                 # bottom = '484px',
                   time = '0.4s',
-                 # buttonColorDark = "lightgrey",
                   label = "🌙"),
-    
 
     # Sidebar with a slider input for number of bins
     sidebarLayout(
@@ -68,9 +66,8 @@ shinyUI(
                      )),
                  ),
         
-        # Show elevation map
-        hidden(
-            div(id = "main",
+            # Show elevation map
+            hidden(div(id = "main",
                 plotOutput("mapOutput"),
                 downloadButton("downloadPlot", label = "Download")
             )
