@@ -24,16 +24,16 @@ shinyServer(function(input, output) {
     # some js/css to show hide elements on hover, no transition effects though :(
     onclick("methods", toggle("dropdown1", anim = T, animType = "slide"))
 
+    #onclick()
     # TODO styles
     # TODO add leaflet map of country outline and location
-    # TODO add waiter functionality
     
     observeEvent(input$gen , {
         
         # display plot output
         show("main")
         
-        # TODO plot isnt shown on first pass, unhide plot window earlier
+        # create a loading image for plot
         waiter_show(id = "mapOutput", 
                     html = spin_three_bounce(),
                     hide_on_render = T)
