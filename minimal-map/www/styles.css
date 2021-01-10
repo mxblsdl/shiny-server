@@ -15,6 +15,12 @@ padding: 7px;
 }
 
 #dropdown1 {
-    background-color: rgb(255, 255, 255);
-    padding: 7px;
+background-color: rgb(255, 255, 255);
+padding: 7px;
+}
+
+.darkmode-toggle {
+  height:50px;
+  width:50px;
+  font-size:20px;
 }
