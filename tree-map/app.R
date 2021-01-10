@@ -42,11 +42,6 @@ trees_plot <- function(df, val) {
 
 
 ui <- material_page(
-  # fun darkmode settings
-  # Take direct inputs
-  # darkmode::with_darkmode(autoMatchOsTheme = T,
-  #                         mixColor = "#D2D1D6",
-  #                         time = '0.2s'),
 
   title = "PDX Trees",
   nav_bar_fixed = F, 
@@ -125,7 +120,7 @@ ui <- material_page(
       h3("Contact Information")
     )
 
-  )
+) # end UI
 
 
 server <- function(input, output, session) {
@@ -133,19 +128,18 @@ server <- function(input, output, session) {
   # Make part of leaflet to a function
   neigh[is.na(neigh)] <- 0
   
-  # create reactive switch input value
-  trees <- reactive({input$switch1})
-  
   # plot of number of trees next to map of neighborhoods colored by number of trees
   # toggle changes per acre to gross values
-  output$plot1 <-renderPlot({
-    t <- trees()
-    t <- switch(t,
+  output$plot1 <- renderPlot({
+    t <- switch(input$switch1,
            "total" = "n_trees",
            "per acre" = "trees_per_acre")
     trees_plot(neigh, t)
   })
 
+  # TODO define mapval
+  mapval <- "n_trees"
+  
   # plot of fruit trees / nut trees  
   # map next to plot reflecting same thing
   # Maybe add highest lowest functionality
@@ -153,17 +147,14 @@ server <- function(input, output, session) {
   #   shinipsum::random_ggplot(type = "col")
   # ) 
   
-  
-  
-  
-pal <- colorQuantile(palette = 'Blues', 
-                   domain = neigh[[mapval]], 
-                   n = 5)
+  pal <- colorQuantile(palette = 'Blues',
+                     domain = neigh[[mapval]],
+                     n = 5)
 
-# labels <- sprintf(
-#     "<strong>%s</strong><br/>%g people / mi<sup>2</sup>",
-#     states$name, states$density
-#   ) %>% lapply(htmltools::HTML)
+  # labels <- sprintf(
+  #     "<strong>%s</strong><br/>%g people / mi<sup>2</sup>",
+  #     states$name, states$density
+  #   ) %>% lapply(htmltools::HTML)
 
   output$per_acre <- renderLeaflet({
     
