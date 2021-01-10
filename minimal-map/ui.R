@@ -2,7 +2,7 @@
 library(shiny)
 library(shinyjs)
 library(colourpicker)
-#library(shinyBS)
+library(darkmode)
 library(waiter)
 
 # Define UI for application that draws a histogram
@@ -11,10 +11,17 @@ shinyUI(
     useShinyjs(),
     use_waiter(),
     includeCSS("www/styles.css"),
-    
+    tags$script(src = "myjs.js"),
     # Application title
     titlePanel("Minimalist Maps"),
     
+    with_darkmode(autoMatchOsTheme = F,
+                 # bottom = '484px',
+                  time = '0.4s',
+                 # buttonColorDark = "lightgrey",
+                  label = "🌙"),
+    
+
     # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
@@ -51,15 +58,14 @@ shinyUI(
         ),
 
     mainPanel(
-        
-        # Some about, could be moved to hibable dropdown
+        # Some about, could be moved to hideable drop down
         fluidRow(id = "methods", 
                  div(class = "header", "Info"),
-                 div(id = "dropdown1", 
+                 hidden(div(id = "dropdown1", 
                      "Invoke minimal line maps showing the elevation of any country in the world!",
                      br(),
                      "These maps are inspired by a couple notable blog posts and are commonly cited as similar to 'Unknown Pleasures' album artwork"
-                     ),
+                     )),
                  ),
         
         # Show elevation map
