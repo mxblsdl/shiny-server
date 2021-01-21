@@ -16,36 +16,55 @@ options(shiny.autoreload = T)
 
 neigh <- read_sf("data/data.gpkg", layer = "neigh")
 
+# plot function
 trees_plot <- function(df, val) {
-  gg_df <- df %>% 
-    as.data.frame() %>% 
-    arrange(desc(.[[val]])) %>% 
-    slice(1:5) %>% 
-    mutate(MAPLABEL = factor(MAPLABEL))
-    
-    ggplot(gg_df) +
-    geom_bar(aes(x = reorder(MAPLABEL, .[[val]]) ,
-                 y = .[[val]],
-                 fill = .[[val]]
-                 ),
-             stat = "identity") +
+  gg_df <- ggplot(df) +
+    geom_bar(aes(x = reorder(MAPLABEL, .data[[val]]) ,
+                 y = .data[[val]],
+                 fill = .data[[val]]
+    ),
+    stat = "identity") +
     theme_classic() +
-    labs(y = "Number of Trees",
-         x = element_blank()) +
+    labs(x = element_blank()) +
     scale_y_continuous(labels = comma) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
           panel.background = element_rect(fill = '#f7f0d2'),
           plot.background = element_rect(fill = '#f7f0d2')) +
     scale_x_discrete(labels = function(x) gsub("d I", 'd\nI', x)) +
     theme(legend.position = "none")
+  
+  gg_df + if(val == "n_trees") {
+    labs(y = "Total Trees")
+  } else {
+    labs(y = "Trees Per Acre") 
+  }
 }
+
+# TODO revisit original data there appears to be issues with it
+# TODO change neighborhood names to be more understandable
+
+# TODO have leaflet display popups
+# TODO Get switches to change map and graph
+# TODO second map should have individual trees
+# TODO change switch to be total or fruit/nut
 
 
 ui <- material_page(
 
+  tags$style("
+             .switch label .lever {
+             background-color:rgba(44, 161, 245, .5);
+             }
+             .switch label .lever:after {
+             background-color:rgba(44, 161, 245, .9);
+             }
+             "),
+  
   title = "PDX Trees",
   nav_bar_fixed = F, 
   nav_bar_color = "green darken-3",
+  
+  # side panel
   material_side_nav(
     fixed = F,
     material_side_nav_tabs(
@@ -58,15 +77,14 @@ ui <- material_page(
                 "map",
                 "contacts")
       ),
+    
+    # switch not doing anything right now
     material_switch("swi", off_label = "off", on_label = "on")
     ), # end the side nav html
   
   # Define each tab content
-  # Introduction and dashboard compoents
-  # Possibly some plots and figures
   material_side_nav_tab_content(side_nav_tab_id = "dash",
       h3("Dashboard Content"),
-      
       # information about this app
       h3("Some intro text"),
       
@@ -76,8 +94,8 @@ ui <- material_page(
                    material_column(class = "left",
                                    material_switch(
                                      input_id = "switch1",
-                                     off_label = "total",
-                                     on_label = "per acre",
+                                     off_label = "Total",
+                                     on_label = "Per Acre",
                                      initial_value = T
                                    )),
                    material_column(class = "left",
@@ -89,12 +107,13 @@ ui <- material_page(
                                    ))
                    ),
       
+      # main dashboard outputs
       material_row(id = "plots",
                    material_column(class = "center", width = 5, offset = 1,
                                    plotOutput("plot1")
                                    ),
                    material_column(class = "center", width = 6,
-                                   leafletOutput("per_acre",
+                                   leafletOutput("dash-map",
                                                  width = "100%",
                                                  height = "55vh")
                    )
@@ -102,6 +121,7 @@ ui <- material_page(
       
     ),
   
+  # Second leaflet map
   material_side_nav_tab_content(side_nav_tab_id = "map",
     h3("Leaflet Placeholder"),
     material_row(
@@ -111,41 +131,44 @@ ui <- material_page(
                                                    height = "70vh"),
                                      depth = 2)
                       )
-    )
-                                
+      )
   ),
   
-    material_side_nav_tab_content(
+  # Contact Card 
+  material_side_nav_tab_content(
       side_nav_tab_id = "contact",
       h3("Contact Information")
-    )
+      )
 
 ) # end UI
 
+# Server ------------------------------
 
 server <- function(input, output, session) {
-  
+
   # Make part of leaflet to a function
   neigh[is.na(neigh)] <- 0
+  
+  # first switch input
+  t <- reactive({
+    ifelse(input$switch1, "trees_per_acre", "n_trees")
+  })
   
   # plot of number of trees next to map of neighborhoods colored by number of trees
   # toggle changes per acre to gross values
   output$plot1 <- renderPlot({
-    t <- switch(input$switch1,
-           "total" = "n_trees",
-           "per acre" = "trees_per_acre")
-    trees_plot(neigh, t)
+    val <- t()
+    plot_data  <- neigh %>% 
+        arrange(desc(.data[[val]])) %>% 
+        slice(1:5) %>% 
+        mutate(MAPLABEL = factor(MAPLABEL))
+    print(val)
+    # create plot
+    trees_plot(plot_data, val)
   })
 
   # TODO define mapval
   mapval <- "n_trees"
-  
-  # plot of fruit trees / nut trees  
-  # map next to plot reflecting same thing
-  # Maybe add highest lowest functionality
-  # output$plot2 <-renderPlot(
-  #   shinipsum::random_ggplot(type = "col")
-  # ) 
   
   pal <- colorQuantile(palette = 'Blues',
                      domain = neigh[[mapval]],
@@ -156,14 +179,14 @@ server <- function(input, output, session) {
   #     states$name, states$density
   #   ) %>% lapply(htmltools::HTML)
 
-  output$per_acre <- renderLeaflet({
-    
+  # render the basic basemap set to the correct view & zoom
+  output$`dash-map` <- renderLeaflet({
     leaflet(options = leafletOptions(maxZoom = 20,
                                      minZoom = 10,
                                      zoomControl = F)) %>%
       htmlwidgets::onRender("function(el, x) {
                           L.control.zoom({position: 'topright'}).addTo(this)
-                          }") %>% 
+                          }") %>%
       addProviderTiles(providers$CartoDB.Positron, group = "Default") %>%
   #    addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>% 
       setView(lng = -122.63,
@@ -177,7 +200,8 @@ server <- function(input, output, session) {
       #                  options = layersControlOptions(autoZIndex = F))
   })
   
-leafletProxy("per_acre", data = neigh) %>% 
+  # add polygon layer
+  leafletProxy("dash-map", data = neigh) %>% 
   addPolygons(stroke = T
               , weight = 1
               # use get() here

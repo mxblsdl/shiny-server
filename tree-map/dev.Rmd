@@ -188,10 +188,11 @@ val <- "trees_per_acre"
 neigh %>% 
   select(!!sym(val)) %>% 
   arrange(!!sym(val))
+
 plotf <- function(df, val) {
   df %>% 
   as.data.frame() %>% 
-  arrange(desc( !!sym(val) )) %>% 
+  arrange(desc( .data[[val]] )) %>% 
   slice(1:5) %>% 
   mutate(MAPLABEL = factor(MAPLABEL)) %>% 
 ggplot() +
@@ -209,6 +210,7 @@ ggplot() +
   scale_x_discrete(labels = function(x) gsub("d I", 'd\nI', x)) +
   theme(legend.position = "none")
 }
+
 plotf(neigh, "trees_per_acre")
 ```
 

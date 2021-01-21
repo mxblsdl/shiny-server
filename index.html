@@ -5,7 +5,8 @@
     <!-- Links and scripts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    
+    <script type="text/javascript" src="d3.min.js"></script>
+
     <style>
     body { 
         font-family: Futura,Trebuchet MS,Arial,sans-serif; 
@@ -42,14 +43,18 @@
                 This is all for fun and done in spare time and will likely remain a work in progress
             </h5>
         </div>
+    </div>
     
-        <div class="col s4 hoverable">
+    <div class="row scale-transition scale-out con">
+        <div class="col s4 hoverable offset-s7">
             <div class="card blue-grey">
-                <div class="card-content white-text">Tree Map</div>
+                <h5 class="card-content white-text">Portland Tree Map</h5>
                 <div class="card-action center"><a href="tree-map">link</a></div>
             </div>
         </div>
-    
+    </div>
+        
+    <div class="row scale-transition scale-out con">
         <div class="col s4 hoverable">
             <div class="card blue-grey">
                 <div class="card-image"> 
@@ -59,24 +64,25 @@
                 <div class="card-action center"><a href="minimal-map/">link</a></div>
             </div>
         </div>
-    
-        <div class="col s4 hoverable">
-            <div class="card blue-grey">
-                <div class="card-content white-text">Content</div>
-                <div class="card-action center"><a href="#">link</a></div>
-            </div>
-        </div>
-
     </div>
-
-    <div class="row">
-        <div class="col s6 offset 2 hoverable">
+    
+    <div class="row scale-transition scale-out con">
+        <div class="col s6 hoverable offset-s7">
             <div class="card blue-grey">
-                <div class="card-content white-text">My Setup
+                <h5 class="card-content white-text">My Setup
                     <br>
                     Notes on how I set up this shiny server
-                </div>
+                </h5>
                 <div class="card-action center"><a href="setup/">link</a></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row scale-transition scale-out con">
+        <div class="col s4 hoverable">
+            <div class="card blue-grey">
+                <h5 class="card-content white-text">Content Forthcoming</h5>
+                <div class="card-action center"><a href="#">link</a></div>
             </div>
         </div>
     </div>
@@ -91,6 +97,16 @@
         <!-- </div> -->
     </footer>
     
+<script>
+
+//Create a delayed pop up for items
+window.onload = setTimeout(() => {
+    d3.selectAll(".con").classed("scale-out", false)    
+    d3.selectAll(".con").classed("scale-in", true)
+}, 700);
+
+</script>
+
     </body>
     
     </html>
