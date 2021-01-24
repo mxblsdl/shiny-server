@@ -1,29 +1,30 @@
 ---
-title: "My Setup"
+title: "How I Built My Shiny Server"
 output: 
   html_document:
     css: "style.css"
+    toc: true
 ---
 ```{r setup, include=F}
 knitr::opts_chunk$set(eval = F)
 ```
 
-# How I built this
-
 Notes on my process for getting this site up...
 
-1) Shiny server
+# Shiny server
   - I mostly followed [Dean Attali's](https://deanattali.com/2015/05/09/setup-rstudio-shiny-server-digital-ocean/) blog about how to get RStudio and Shiny server set up. This was the inspiration and guiding document for this project. The steps outlined in Dean's blog get a Digital Ocean linux server setup.
   
+## Minor Updates
   - I made some updates to the blog, most notably getting the most recent version of R and RStudio Server. I followed the [instructions from Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-install-r-on-ubuntu-20-04) to install the latest version of R. This was a significant change since you are required to add a CRAN repository to your Ubnutu server.
   
-2) Setup in git
-  - The above steps got my set up with Github and my workflow was:
-    1) Development on local machine and push changes to Github.
-    2) Log into server, navigate to `shiny-server` directory and pull changes.
+# Git Setup
+  - The above steps got me set up with Github and my workflow was:
+    1) Development on local machine and push changes to Github
+    2) Log into server, navigate to `shiny-server` directory and pull changes
   - I knew webhooks were a thing so I thought it would be great if my server pulled changes that I made locally without having to log in and manually pull from Github.
-  - I mostly used [this blog](https://ansonvandoren.com/posts/deploy-hugo-from-github/) to get webhooks set up.
-  - I changed the redeploy script to a more stripped down version that only changes directories and does a `git pull`.
+  - [This blog](https://ansonvandoren.com/posts/deploy-hugo-from-github/) was very helpful in actually implementing webhooks
+  - Within the above blog, I changed the redeploy script to a more stripped down version that only changes directories and does a `git pull`
+  
 ```{bash}
 REMOTE_REPO=https://github.com/mxblsdl/shiny-server.git
 
@@ -35,8 +36,12 @@ BACKUP_WWW=$HOME/backup_html
 
 cd /srv/shiny-server
 git pull
-  ```
-I also made some updates to my webhook service file. This is the file keeps the redeploy script running when I'm not logged onto the server.
+```
+
+## Webhook Service
+
+ -I made some updates to the webhook service file. This file keeps the redeploy script running when you are not logged onto the server.
+
 ```{bash}
 After=network.target
 
@@ -54,44 +59,61 @@ WantedBy=multi-user.target
 
 - Another change from the webhooks blog was setting up a firewall for my DO droplet. My original `sudo ufw status` was inactive. So I activated the firewall and made sure to add ports `3838` for Shiny Server and `8787` for RStudio.
 
-3) Adding packages for your shiny application.
-- As noted in Dean's blog, shiny apps run as user `shiny`. This means that any packages that are required for your shiny app need to be available globally to all users. While you can run the command
+# Adding Packages
+
+- As noted in Dean's blog, shiny apps run as user `shiny`. This means that any packages that are required for your shiny app need to be available globally to all users. The following command can be run from the terminal to install packages globally:
 
 ```{bash}
 sudo su - -c "R -e \"install.packages('shiny', repos='http://cran.rstudio.com/')\""
 ```
 
-from your linux DO terminal I thought it would be easier if you could just log into RStudio Server as user shiny and install packages from an R Studio session.
+- While this works I wanted to be able to log into RStudio Server as user shiny and install packages through the Rstudio interface
 
-This requires two steps:
-  1) You need to set a password for user `shiny` so they can access RStudio Server. Any user needs a password to access your instance of RStudio so putting this into context more, `shiny` is treated as a normal user.
+## Setting Up User Shiny
+
+This required:
+
+  - First, setting a password for user `shiny` so they can access RStudio Server. Every user needs a password to access your instance of RStudio Server. Putting this into context more, `shiny` is treated as a normal user.
+
 ```{bash}
 sudo passwd shiny
 # end new password at prompt
 ```
-  2) I had to edit the PAM permissions for user `shiny`. I really don't know what PAM permissions are exactly but found a couple SO threads that pointed to this as an issue. I also found the [RStudio Server documentation](https://docs.rstudio.com/ide/server-pro/1.2.1502-1/r-sessions.html#pam-sessions) to be helpful in explaining PAM permissions *and many other things about RStudio Server*.
 
-  - To change the PAM permissions navigate to 
+  - Second, I had to edit the PAM permissions for user `shiny`. I really don't know what PAM permissions are but found a Stack Overflow thread helped identify the issue. 
+  
+  -I also found the [RStudio Server documentation](https://docs.rstudio.com/ide/server-pro/1.2.1502-1/r-sessions.html#pam-sessions) to be helpful in explaining PAM permissions *and many other things about RStudio Server*.
+
+## Edit PAM Permissions
+
+  - Navigate to:
 
 ```{bash}
 etc/rstudio/rserver.conf
-# sudo vim etc/rstudio/rserver.conf # if you chose vim as your editor
+# sudo nano etc/rstudio/rserver.conf # if you chose nano as your editor
 ```
   
-  - and edit the file to include the line `auth-minimum-user-id=100`
-  - If there is no setting the minimum user id will default to 1000
-  - my shiny user had a UID of 996, which prohibited that user from logging in to RStudio.
-  - run `sudo rstudio-server restart` to make sure changes to propagated
-Now you should be able to login as user `shiny`, install packages that will be directly available in your shiny applications.
+  - Edit the file to include the line `auth-minimum-user-id=100`
+  - If not explicitly stated, the minimum user id will default to 1000. My `shiny` user had a default UID of 996, which prohibited that user from logging in to RStudio.
+  - Run `sudo rstudio-server restart` to make sure changes are propagated
+  - Now you should be able to login as user `shiny` and install packages that will be directly available in your shiny applications
 
-- **Note on installing packages** some packages have requirements outside of R and will require installation of some linux libraries. This will have to be done by a user who has `sudo` privileges, shiny user probably won't. I found the package install error messages to be helpful in these instances.
+### Note on some linux packages
 
-4) Additional fun thing for RStudio login
-  - add a `login.html` file to `etc/rstudio/` and this will display additional HTML below the default login page
-  - additional CSS can be added here as well 
-  - Make sure to run:
+- Your shiny server will be running on linux and may require additional software outside of R to run
+- For example, the spatial data package `sf` requires `gdal` which probably isn't default installed on your server.
+- This [blog post](https://philmikejones.me/tutorials/2018-08-29-install-sf-ubuntu/) helped me navigate issues with `sf`, but the package error messages will also provide helpful information
+- A user with `sudo` privileges, shiny user probably won't have these, will need to install required linux packages
+
+# Fun Things
+  - You can edit the RStudio Server login page to display custom HTML and CSS 
+  - Simply add a `login.html` file to `etc/rstudio/` to display additional HTML below the default login box
+  - CSS added in teh `login.html` will affect the entire page
+  - Make sure to restart the server after any changes
+  
 ```{bash}
 sudo rstudio-server restart 
 ```
   
-After making any changes 
+***
+
