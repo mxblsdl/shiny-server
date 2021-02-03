@@ -180,8 +180,12 @@ runApp(ui, server)
 ```{r}
 library(scales)  
 
-neigh <- read_sf("../tree_map/dat/data.gpkg", layer = "neigh")
-neigh
+neigh <- read_sf("tree-map/data/data.gpkg", layer = "neigh")
+neigh %>% 
+  mutate(MAPLABEL = gsub("Improvement League|Residential League|Neighborhood Network|Foothills League",
+                         "",
+                         MAPLABEL)) %>% 
+  pull(MAPLABEL)
 
 val <- "trees_per_acre"
 
