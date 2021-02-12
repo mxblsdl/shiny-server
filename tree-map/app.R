@@ -28,23 +28,19 @@ trees_plot <- function(df, val) {
     labs(x = element_blank()) +
     scale_y_continuous(labels = comma) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
-          panel.background = element_rect(fill = '#f7f0d2'),
-          plot.background = element_rect(fill = '#f7f0d2')) +
+          panel.background = element_rect(fill = "#f0f0f0"),
+          plot.background = element_rect(fill = "#f0f0f0")) +
     scale_x_discrete(labels = function(x) gsub("d I", 'd\nI', x)) +
     theme(legend.position = "none")
   
-  gg_df + if(val == "n_trees") {
-    labs(y = "Total Trees")
-  } else {
-    labs(y = "Trees Per Acre") 
-  }
+  gg_df + labs(y = switch(val, 
+                 "n_trees" = "Total Trees",
+                 "trees_per_acre" = "Trees Per Acre"))
 }
 
-# TODO revisit original data there appears to be issues with it
-# TODO change neighborhood names to be more understandable
 
 # TODO have leaflet display popups
-# TODO Get switches to change map and graph
+# TODO have graph change number of displays, defult to 5
 # TODO second map should have individual trees
 # TODO change switch to be total or fruit/nut
 
@@ -84,21 +80,28 @@ ui <- material_page(
   
   # Define each tab content
   material_side_nav_tab_content(side_nav_tab_id = "dash",
-      h3("Dashboard Content"),
-      # information about this app
-      h3("Some intro text"),
+      h2("Trees of Portland Summary"),
       
-      h4("plots of trees per neighborhood"),
+      # information about this app
+      h3("Neighborhoods, trees and parks"),
+      
+#      h4("plots of trees per neighborhood"),
 
       material_row(id = "controls",
-                   material_column(class = "left",
+                   material_column(width = 3,
                                    material_switch(
                                      input_id = "switch1",
                                      off_label = "Total",
                                      on_label = "Per Acre",
                                      initial_value = T
                                    )),
-                   material_column(class = "left",
+                   material_column(width = 2,
+                     material_number_box("graph",
+                                         label = "Neighborhoods",
+                                         max_value = 15,
+                                         min_value = 3,
+                                         initial_value = 5)),
+                   material_column(class = "right",
                                    material_switch(
                                      input_id = "switch2",
                                      off_label = "Fruit",
@@ -157,27 +160,16 @@ server <- function(input, output, session) {
   # plot of number of trees next to map of neighborhoods colored by number of trees
   # toggle changes per acre to gross values
   output$plot1 <- renderPlot({
+    graph_size <- input$graph
     val <- t()
     plot_data  <- neigh %>% 
         arrange(desc(.data[[val]])) %>% 
-        slice(1:5) %>% 
+        slice(1:graph_size) %>% 
         mutate(MAPLABEL = factor(MAPLABEL))
     print(val)
     # create plot
     trees_plot(plot_data, val)
   })
-
-  # TODO define mapval
-  mapval <- "n_trees"
-  
-  pal <- colorQuantile(palette = 'Blues',
-                     domain = neigh[[mapval]],
-                     n = 5)
-
-  # labels <- sprintf(
-  #     "<strong>%s</strong><br/>%g people / mi<sup>2</sup>",
-  #     states$name, states$density
-  #   ) %>% lapply(htmltools::HTML)
 
   # render the basic basemap set to the correct view & zoom
   output$`dash-map` <- renderLeaflet({
@@ -201,26 +193,47 @@ server <- function(input, output, session) {
   })
   
   # add polygon layer
-  leafletProxy("dash-map", data = neigh) %>% 
-  addPolygons(stroke = T
-              , weight = 1
-              # use get() here
-              , fillColor = ~pal(get(mapval))
-              , color = "white"
-              , dashArray = "2"
-              , fillOpacity = 0.7
-              , highlight = highlightOptions(
-                weight = 5
-                , color = "#999"
-                , dashArray = ""
-                , fillOpacity = .7
-                , bringToFront = T)
-              #   weight = 5,
-              #   color = "#666",
-              #   dashArray = "",
-              #   fillOpacity = 0.7,
-              #   bringToFront = TRUE)
-  )
+observe({
+  # Get selected column
+  colorBy <- t()
+  
+  # create color scale
+  pal <- colorQuantile(palette = 'Blues',
+                       domain = neigh[[colorBy]],
+                       n = 5)
+  
+  # Create pop-up based on switch input
+  valueVar <- switch(colorBy,
+                     "n_trees" = "Number of Trees",
+                     "trees_per_acre" = "Trees per Acre")
+  
+  popup <- glue::glue("<strong> { neigh[['MAPLABEL']] } </strong> <br>
+             {valueVar}: {round(neigh[[colorBy]], 2)}
+             ")
+  
+  # add polygons to map
+  leafletProxy("dash-map", 
+               data = neigh) %>%
+    addPolygons(stroke = T
+                , weight = 1
+                , fillColor = ~pal(get(colorBy))
+                , color = "white"
+                , dashArray = "2"
+                , fillOpacity = 0.7
+                , popup = popup
+                , highlight = highlightOptions(
+                  weight = 5
+                  , color = "#999"
+                  , dashArray = ""
+                  , fillOpacity = .7
+                  , bringToFront = T)
+                #   weight = 5,
+                #   color = "#666",
+                #   dashArray = "",
+                #   fillOpacity = 0.7,
+                #   bringToFront = TRUE)
+    )
+  }) 
 
 # map specific tab
   output$map <-renderLeaflet(

@@ -316,10 +316,19 @@ l <- leaflet(options = leafletOptions(maxZoom = 20,
       setMaxBounds(lng1 = -122.4,
                    lat1 = 45.4,
                    lng2 = -122.8,
-                   lat2 = 45.67)# %>%
-                )
+                   lat2 = 45.67)
 
-    addPolygons(data = neigh, 
+popup = paste0("<strong>", neigh[["MAPLABEL"]])
+colorBy <- "n_trees"
+valueVar <- switch(colorBy,
+                   "n_trees" = "Number of Trees",
+                   "trees_per_acre" = "Trees per Acre")
+  
+  popup <- glue::glue("<strong> { neigh[['MAPLABEL']] } </strong> <br>
+             {valueVar}: {neigh[[colorBy]]}
+             ")
+  
+  addPolygons(l, data = neigh, 
                 stroke = T
                 , weight = 1
                 # use get() here
@@ -327,12 +336,13 @@ l <- leaflet(options = leafletOptions(maxZoom = 20,
                 , color = "white"
                 , dashArray = "2"
                 , fillOpacity = 0.7
+                ,popup = popup
                 , highlight = highlightOptions(
                   weight = 5
                   , color = "#999"
                   , dashArray = ""
                   , fillOpacity = .7
-                  , bringToFront = T)
+                  , bringToFront = T))
                 #   weight = 5,
                 #   color = "#666",
                 #   dashArray = "",
