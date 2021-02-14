@@ -15,6 +15,8 @@ library(scales)
 options(shiny.autoreload = T)
 
 neigh <- read_sf("data/data.gpkg", layer = "neigh")
+trees <- read_sf("data/data.gpkg", layer = "park_trees")
+parks <- read_sf("data/data.gpkg", layer = "park")
 
 # plot function
 trees_plot <- function(df, val) {
@@ -39,8 +41,6 @@ trees_plot <- function(df, val) {
 }
 
 
-# TODO have leaflet display popups
-# TODO have graph change number of displays, defult to 5
 # TODO second map should have individual trees
 # TODO change switch to be total or fruit/nut
 
@@ -140,7 +140,8 @@ ui <- material_page(
   # Contact Card 
   material_side_nav_tab_content(
       side_nav_tab_id = "contact",
-      h3("Contact Information")
+      h3("Made by Max for fun"),
+      a(href = "http://www.maxblasdel.com", "My Website")
       )
 
 ) # end UI
@@ -166,7 +167,7 @@ server <- function(input, output, session) {
         arrange(desc(.data[[val]])) %>% 
         slice(1:graph_size) %>% 
         mutate(MAPLABEL = factor(MAPLABEL))
-    print(val)
+    
     # create plot
     trees_plot(plot_data, val)
   })
@@ -235,9 +236,10 @@ observe({
     )
   }) 
 
+# TODO delay load until clicked on
 # map specific tab
   output$map <-renderLeaflet(
-    leaflet(options = leafletOptions(maxZoom = 20, minZoom = 10, zoomControl = F)) %>%
+    leaflet(options = leafletOptions(maxZoom = 18, minZoom = 10, zoomControl = F)) %>%
       htmlwidgets::onRender("function(el, x) {
                           L.control.zoom({position: 'topright'}).addTo(this)
                           }") %>% 
@@ -251,12 +253,32 @@ observe({
                    lng2 = -122.8,
                    lat2 = 45.67) %>%
       addLayersControl(baseGroups = c("Default", "Satellite"), 
-                       options = layersControlOptions(autoZIndex = F))
-    #  leafem::addMouseCoordinates()# %>%
-    #addControl(actionButton("map-change", label = "", icon = icon("bars"), class = "leaf-extend"), position = "topleft")
+                       options = layersControlOptions(autoZIndex = F)) #%>% 
   )
 }
   
+# TODO add event on click
+# observeEvent(, {
+#   leafletProxy("map") %>% 
+#     addPolygons(data = parks,
+#                 color = "#a5bda0", 
+#                 fill = F,
+#                 popup = paste(parks[["NAME"]]),
+#                 popupOptions = list(className = "pop")) %>% 
+#     addAwesomeMarkers(data = trees,
+#                       icon = makeAwesomeIcon(
+#                         icon = "tree",
+#                         library = "fa",
+#                         markerColor = "lightgreen",
+#                         iconColor = "green"
+#                       ),
+#                       clusterOptions = markerClusterOptions(spiderfyOnMaxZoom = T, 
+#                                                             showCoverageOnHover = T,
+#                                                             spiderLegPolylineOptions = "width = 5")
+#     )
+# })
+
+
     
 
 shinyApp(ui, server)

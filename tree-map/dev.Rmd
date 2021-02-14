@@ -17,36 +17,45 @@ library(leaflet.providers)
 
 shinyOptions(shiny.autoreload = T)
 ```
-
 ```{r}
-ui <- material_page(
-    material_side_nav(
-      fixed = T,
-      material_row(
-        material_text_box("park-search", 
-                          "Search Parks")
-      ),
-      material_row(
-        material_column(width = 9,
-                        material_dropdown("parks", 
-                                          "Parks"
-                        )),
-      ),
-      material_row(
-        material_column(width = 9,
-                        material_dropdown("neigh", 
-                                          "Neighborhoods"
-                        )),
-      )
-    ))
+neigh <- read_sf("tree-map/data/data.gpkg", layer = "tree")
+trees <- read_sf("tree-map/data/data.gpkg", layer = "park_trees")
+parks <- read_sf("tree-map/data/data.gpkg", layer = "park")
 
 
-server <- function(input, output, session) {}
+l <- leaflet(options = leafletOptions(maxZoom = 18, minZoom = 10, zoomControl = T)) %>%
+      htmlwidgets::onRender("function(el, x) {
+                          L.control.zoom({position: 'topright'}).addTo(this)
+                          }") %>% 
+      addProviderTiles(providers$CartoDB.Positron, group = "Default") %>%
+      addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>% 
+      setView(lng = -122.63,
+              lat = 45.54,
+              zoom = 12) %>%
+      setMaxBounds(lng1 = -122.4,
+                   lat1 = 45.4,
+                   lng2 = -122.8,
+                   lat2 = 45.67) %>%
+      addLayersControl(baseGroups = c("Default", "Satellite"), 
+                       options = layersControlOptions(autoZIndex = F))
 
-shinyApp(ui, server)
+l %>%
+        addPolygons(data = parks,
+                    color = "#a5bda0", 
+                    fill = F) %>% 
+  addAwesomeMarkers(data = trees,
+    icon = makeAwesomeIcon(
+      icon = "tree",
+      library = "fa",
+      markerColor = "lightgreen",
+      iconColor = "green"
+    ),
+    clusterOptions = markerClusterOptions(spiderfyOnMaxZoom = T, 
+                                          showCoverageOnHover = T,
+                                          spiderLegPolylineOptions = "width = 5",
+                                          animate = T)
+  )
 ```
-
-
  
  
 ```{r}
@@ -240,58 +249,6 @@ ggplot() +
   scale_x_discrete(labels = function(x) gsub("d I", 'd\nI', x)) +
   theme(legend.position = "none")
 ```
-
-# from the ev diffusion model
-
-```{r}
-  observe({
-    colorBy <- input$varinput
-    
-    # Set Demographics & Map Display Color to switch input 
-    if (input$`demographics-choice` == FALSE){
-      counties2 <- counties2.ev
-      
-      pal <- colorNumeric(
-        palette = "Greens",
-        domain = c(min(map_data[[colorBy]], map_data_gen[[colorBy]]),
-                   max(map_data[[colorBy]], map_data_gen[[colorBy]]))
-      )
-    } else {
-      counties2 <- counties2.gen
-      
-      pal <- colorNumeric(
-        palette = "Blues",
-        domain = c(min(map_data[[colorBy]], map_data_gen[[colorBy]]),
-                   max(map_data[[colorBy]], map_data_gen[[colorBy]]))
-      )
-    }
-    
-    # get pop up information (updated to sf object)
-    popup <- paste0(
-      "<strong>", counties2[['NAME']], " County", "</strong>", "<br>",
-      namer[, colorBy], ": ",
-      counties2[[colorBy]]
-    )
-    
-    # update map
-    leafletProxy("map_demographics", data = counties2) %>%
-      clearShapes() %>%
-      addPolygons(stroke = TRUE, opacity = 1, weight = 0.7,
-                  smoothFactor = 0.1, color = "gainsboro",
-                  fillOpacity = 0.7,
-                  fillColor = ~pal(get(colorBy)),
-                  popup = popup
-      ) %>%
-      clearControls() %>% 
-      addLegend("bottomright", pal = pal, values = c(min(map_data[[colorBy]], map_data_gen[[colorBy]]),
-                                                     max(map_data[[colorBy]], map_data_gen[[colorBy]])),
-                title = namer[, colorBy],
-                labFormat = labelFormat(prefix = ""),
-                opacity = 0.8
-      ) %>% 
-      addControl(actionButton("helper-demo","?", width = '20px', style = "padding:initial;"), position = "topleft")
-```
-
 
 
 ```{r}
