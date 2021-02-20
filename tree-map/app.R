@@ -265,30 +265,51 @@ observe({
                    lng2 = -122.8,
                    lat2 = 45.67) %>%
       addLayersControl(baseGroups = c("Default", "Satellite"), 
-                       options = layersControlOptions(autoZIndex = F)) #%>% 
+                       options = layersControlOptions(autoZIndex = F)) %>%
+      addPolygons(data = parks,
+                  color = "#a5bda0",
+                  fill = F,
+                  popup = paste(parks[["NAME"]]),
+                  popupOptions = list(className = "pop")) %>%
+      addAwesomeMarkers(data = trees,
+                        icon = makeAwesomeIcon(
+                          icon = "tree",
+                          library = "fa",
+                          markerColor = "lightgreen",
+                          iconColor = "green"
+                        ),
+                        clusterOptions = markerClusterOptions(spiderfyOnMaxZoom = T,
+                                                              showCoverageOnHover = T,
+                                                              spiderLegPolylineOptions = "width = 5")
   )
+  
+  # TODO add event on click
+  # observe({
+    # leafletProxy("map") %>%
+    #   addPolygons(data = parks,
+    #               color = "#a5bda0",
+    #               fill = F,
+    #               popup = paste(parks[["NAME"]]),
+    #               popupOptions = list(className = "pop")) %>%
+    #   addAwesomeMarkers(data = trees,
+    #                     icon = makeAwesomeIcon(
+    #                       icon = "tree",
+    #                       library = "fa",
+    #                       markerColor = "lightgreen",
+    #                       iconColor = "green"
+    #                     ),
+    #                     clusterOptions = markerClusterOptions(spiderfyOnMaxZoom = T,
+    #                                                           showCoverageOnHover = T,
+    #                                                           spiderLegPolylineOptions = "width = 5")
+      # )
+    # }
+  )
+  
 }
   
-# TODO add event on click
-# observeEvent(, {
-#   leafletProxy("map") %>% 
-#     addPolygons(data = parks,
-#                 color = "#a5bda0", 
-#                 fill = F,
-#                 popup = paste(parks[["NAME"]]),
-#                 popupOptions = list(className = "pop")) %>% 
-#     addAwesomeMarkers(data = trees,
-#                       icon = makeAwesomeIcon(
-#                         icon = "tree",
-#                         library = "fa",
-#                         markerColor = "lightgreen",
-#                         iconColor = "green"
-#                       ),
-#                       clusterOptions = markerClusterOptions(spiderfyOnMaxZoom = T, 
-#                                                             showCoverageOnHover = T,
-#                                                             spiderLegPolylineOptions = "width = 5")
-#     )
-# })
+
+
+
 
 
     
