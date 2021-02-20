@@ -23,7 +23,7 @@ options(shiny.autoreload = T)
 #                  , user = 'max'
 #                  , password = Sys.getenv("postgre_pswd"))
 
-con <- "tree-map/data/data.gpkg"
+con <- "data/data.gpkg"
 
 neigh <- read_sf(con, layer = "neigh")
 trees <- read_sf(con, layer = "park_trees")
