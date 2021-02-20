@@ -12,11 +12,20 @@ library(dplyr)
 library(ggplot2)
 library(scales)
 
+library(odbc)
+library(DBI)
 options(shiny.autoreload = T)
 
-neigh <- read_sf("data/data.gpkg", layer = "neigh")
-trees <- read_sf("data/data.gpkg", layer = "park_trees")
-parks <- read_sf("data/data.gpkg", layer = "park")
+con <- dbConnect(RPostgreSQL::PostgreSQL(),
+                 , host = Sys.getenv("postgre_ip")
+                 , port = '5432'
+                 , dbname = 'parks'
+                 , user = 'max'
+                 , password = Sys.getenv("postgre_pswd"))
+
+neigh <- read_sf(con, layer = "neigh")
+trees <- read_sf(con, layer = "park_trees")
+parks <- read_sf(con, layer = "park")
 
 # plot function
 trees_plot <- function(df, val) {
@@ -40,8 +49,9 @@ trees_plot <- function(df, val) {
                  "trees_per_acre" = "Trees Per Acre"))
 }
 
-
-# TODO second map should have individual trees
+# TODO change .Renviron to correct IP address of db
+# TODO write up description of project a bit
+# Include postgres setup 
 # TODO change switch to be total or fruit/nut
 
 
