@@ -16,14 +16,14 @@ library(odbc)
 library(DBI)
 options(shiny.autoreload = T)
 
-# con <- dbConnect(RPostgreSQL::PostgreSQL(),
-#                  , host = Sys.getenv("postgre_ip")
-#                  , port = '5432'
-#                  , dbname = 'parks'
-#                  , user = 'max'
-#                  , password = Sys.getenv("postgre_pswd"))
+con <- dbConnect(RPostgreSQL::PostgreSQL(),
+                 , host = Sys.getenv("postgre_ip")
+                 , port = '5432'
+                 , dbname = 'parks'
+                 , user = 'max'
+                 , password = Sys.getenv("postgre_pswd"))
 
-con <- "data/data.gpkg"
+# con <- "data/data.gpkg"
 
 neigh <- read_sf(con, layer = "neigh")
 trees <- read_sf(con, layer = "park_trees")
