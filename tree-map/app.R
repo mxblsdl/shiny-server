@@ -14,9 +14,10 @@ library(scales)
 
 library(odbc)
 library(DBI)
+library(RPostgreSQL)
 options(shiny.autoreload = T)
 
-con <- dbConnect(RPostgreSQL::PostgreSQL(),
+con <- dbConnect(PostgreSQL(),
                  , host = Sys.getenv("postgre_ip")
                  , port = '5432'
                  , dbname = 'parks'
