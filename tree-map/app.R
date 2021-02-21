@@ -22,7 +22,7 @@ con <- dbConnect(PostgreSQL(),
                  , port = '5432'
                  , dbname = 'parks'
                  , user = 'max'
-                 , password = Sys.getenv("postgre_pswd"))
+                 , password = 'shiny'))
 
 # con <- "data/data.gpkg"
 
