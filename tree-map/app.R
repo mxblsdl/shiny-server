@@ -17,6 +17,7 @@ library(DBI)
 library(RPostgreSQL)
 options(shiny.autoreload = T)
 
+readRenviron("~/.Renviron")
 con <- dbConnect(PostgreSQL(),
                  , host = Sys.getenv("postgre_ip")
                  , port = '5432'
