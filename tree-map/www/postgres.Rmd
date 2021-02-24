@@ -1,0 +1,90 @@
+---
+title: "R PostgreSQL Notes"
+output: rmdformats::material
+---
+
+```{r setup, message=FALSE}
+library(sf)
+library(dplyr)
+library(odbc)
+library(DBI)
+
+knitr::opts_chunk$set(comment = NA)
+```
+
+
+1) Install PostgreSQL on digital ocean server
+  - Create user `max` and database `parks`
+  - Connect to `parks` database from DO with `psql -d parks`
+
+Set firewall to allow connections
+https://www.vultr.com/docs/how-to-configure-ufw-firewall-on-ubuntu-14-04
+
+## Change some config files
+https://dba.stackexchange.com/questions/83984/connect-to-postgresql-server-fatal-no-pg-hba-conf-entry-for-host
+
+## Set passwords
+https://chartio.com/resources/tutorials/how-to-set-the-default-user-password-in-postgresql/
+
+## Make sure to install PostGIS
+
+https://computingforgeeks.com/how-to-install-postgis-on-ubuntu-debian/
+
+```{bash, eval = F}
+# May need to update versions
+sudo apt install postgis postgresql-13-postgis-3
+
+psql -d {yourdb}
+CREATE EXTENSION postgis;
+```
+
+
+```{r, eval=F}
+# get all layers
+layers <- st_layers("../../tree_map/dat/data.gpkg")
+
+# read all layers
+lays <- sapply(layers$name, function(x) read_sf("../../tree_map/dat/data.gpkg", layer = x))
+```
+
+# Create connection and write layers
+```{r}
+con <- dbConnect(RPostgreSQL::PostgreSQL(),
+     , host=Sys.getenv("postgre_ip")
+     , port='5432'
+     , dbname='parks'
+     , user='max'
+     , password = Sys.getenv("postgre_pswd"))
+
+dbListTables(con)
+```
+
+
+```{r}
+# Write each file
+# st_write(obj = lays[["park"]], dsn = con, drop = T, layer = "park")
+# st_write(obj = lays[["neigh"]], dsn = con, layer = "neigh")
+# st_write(obj = lays[["portland"]], dsn = con, layer = "portland")
+# st_write(obj = lays[["park_trees"]], dsn = con, layer = "park_trees")
+
+# check tables
+dbListTables(con)
+```
+
+## Test Connection
+Read a file just to make sure everything works
+
+```{r}
+read_sf(con, "portland")
+```
+
+# Deploy to Shiny Server
+
+- Create .Renviron
+- Place in /home/shiny/
+- Change peer authentication to md5 for local users
+- Change file locate `pg_hba.conf`
+https://stackoverflow.com/questions/18664074/getting-error-peer-authentication-failed-for-user-postgres-when-trying-to-ge
+- Restart shiny server
+
+
