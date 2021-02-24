@@ -71,6 +71,11 @@ ui <- material_page(
              .switch label .lever:after {
              background-color:rgba(44, 161, 245, .9);
              }
+             .shiny-material-side-nav-tab-content {
+             padding-left:20px;
+             padding-right:20px;
+             }
+             
              "),
   
   title = "PDX Trees",
@@ -94,7 +99,7 @@ ui <- material_page(
     # switch not doing anything right now
     material_card(title = "Postgres",
                   div(
-                    a("Link to Postgres Info", href = "postgres/"))
+                    a("Link to Postgres Info", href = "postgres"))
                   )
 
     ), # end the side nav html
