@@ -78,3 +78,13 @@ Read a file just to make sure everything works
 read_sf(con, "portland")
 ```
 
+# Deploy to Shiny Server
+
+- Create .Renviron
+- Place in /home/shiny/
+- Change peer authentication to md5 for local users
+- Change file locate `pg_hba.conf`
+https://stackoverflow.com/questions/18664074/getting-error-peer-authentication-failed-for-user-postgres-when-trying-to-ge
+- Restart shiny server
+
+
