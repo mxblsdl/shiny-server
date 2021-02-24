@@ -31,6 +31,9 @@ neigh <- read_sf(con, layer = "neigh")
 trees <- read_sf(con, layer = "park_trees")
 parks <- read_sf(con, layer = "park")
 
+# close connection once data is loaded
+dbDisconnect(con)
+
 # plot function
 trees_plot <- function(df, val) {
   gg_df <- ggplot(df) +
@@ -89,7 +92,11 @@ ui <- material_page(
       ),
     
     # switch not doing anything right now
-    material_switch("swi", off_label = "off", on_label = "on")
+    material_card(title = "Postgres",
+                  div(
+                    a("Link to Postgres Info", href = "postgres.Rmd"))
+                  )
+
     ), # end the side nav html
   
   # Define each tab content
