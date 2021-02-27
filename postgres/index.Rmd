@@ -126,6 +126,7 @@ dbListTables(con)
 
 ### A note about .Renviron
 You'll notice the use of `Sys.getenv()` for the host name and password. This has two uses in the database connection.
+
 1) It's a bad idea to store a password in open code that anyone can read. I have a `.Renviron` file, that is not tracked with git, in my Rproject folder that contains variables 'postgre_ip' and 'postgre_pswd'. The `Sys.getenv()` calls these variables so they never need to written out. This is also useful for API keys.
 
 2) Since I am developing locally and running the app from a VM I can use this method have different login information for my server. On the server I have a different `.Renviron`,again not tracked by git, which has a different IP address. I could also vary the user and password if there were permissions I wanted to track.
