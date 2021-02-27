@@ -2,42 +2,104 @@
 title: "R PostgreSQL Notes"
 output: rmdformats::material
 ---
+# Steps to Setup PostgreSQL
+
+I decided to load spatial data for my Portland Tree map from a database rather than relying on individual files. These are the steps I took to set up PostgreSQL and PostGIS on the same server as Shiny. There were a couple of roadblocks along the way that I want to document solutions to.
+
+*Note: The app uses fairly stable data and was previously loaded from a geopackage (.gpkg) which is a database. While a PostgreSQL database is unneeded for data of this size I wanted to go through the setup steps*
+
+First load a few libraries for interacting with the database and loading spatial data.
 
 ```{r setup, message=FALSE}
+# For reading spatial data
 library(sf)
-library(dplyr)
+# Database connections
 library(odbc)
 library(DBI)
+# Postgre specific database connections
+library(RPostgreSQL)
 
-knitr::opts_chunk$set(comment = NA)
+knitr::opts_chunk$set(eval = F)
 ```
 
+1) Install PostgreSQL on the digital ocean server.
+This is fairly straightforward but since I'm using DO they have [nice help documents](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-20-04).
+`sudo apt install postgresql postgresql-contrib`
 
-1) Install PostgreSQL on digital ocean server
+Once it was installed I created a new user and database.
+  - Use `sudo -u postgres createuser --interactive`
   - Create user `max` and database `parks`
   - Connect to `parks` database from DO with `psql -d parks`
 
-Set firewall to allow connections
-https://www.vultr.com/docs/how-to-configure-ufw-firewall-on-ubuntu-14-04
+2) Change the default password
 
-## Change some config files
-https://dba.stackexchange.com/questions/83984/connect-to-postgresql-server-fatal-no-pg-hba-conf-entry-for-host
+Always a good idea to set a new password for something that is on the internet. I followed [this link](https://chartio.com/resources/tutorials/how-to-set-the-default-user-password-in-postgresql/#changing-the-password)
 
-## Set passwords
-https://chartio.com/resources/tutorials/how-to-set-the-default-user-password-in-postgresql/
+3) Install PostGIS
 
-## Make sure to install PostGIS
-
-https://computingforgeeks.com/how-to-install-postgis-on-ubuntu-debian/
+- I used [this link for reference](https://computingforgeeks.com/how-to-install-postgis-on-ubuntu-debian/), but the steps are essentially to log into your postgres database that you just made and enable postgis once its installed.
 
 ```{bash, eval = F}
-# May need to update versions
-sudo apt install postgis postgresql-13-postgis-3
+# Update to your version of postgres
+sudo apt install postgis postgresql-{{postgres-version}}-postgis-{{postgis-version}}
 
+# log into your postgres database
 psql -d {yourdb}
 CREATE EXTENSION postgis;
 ```
 
+Things are mostly set up at this point. The following points were things I changed to be able to connect to the database and get things running.
+
+4) Set Firewall to Allow Connections
+
+PostgreSQL dwfault port is 5432 and you will need to open this up to be able to connect to the database. I had `UFW` previously installed for firewall purposes so I used this to change the permissions. 
+
+First check the firewall status
+```{bash, eval = F}
+sudo ufw status
+```
+
+If not enabled
+```{bash, eval = F}
+sudo ufw enable
+```
+
+Then add port 5432 and reload `UFW` take enable the new rule.
+```{bash, eval = F}
+sudo ufw allow 5432/tcp
+sudo ufw reload
+```
+
+[This guide](https://www.vultr.com/docs/how-to-configure-ufw-firewall-on-ubuntu-14-04) goes over the steps needed plus more.
+
+**Try connecting to the database at this point from a local machine and through Shiny**
+
+5) Change Config Files
+
+This tripped me up for some time. I was still getting connection issues from Shiny even though I was able to connect locally. If you are able to connect then great! You're all done. If not there is probably an issue with permission protocols. I was specifically getting the error 'Peer authentication failed for user “postgres” (or any user)' which led me [this solution](https://gist.github.com/AtulKsol/4470d377b448e56468baef85af7fd614). 
+
+Essentially navigate to your `pg_hba.conf` file, *mine was at: `/etc/postgresql/13/main/pg_hba.conf`*, and change 
+```{bash, eval = F}
+# TYPE DATABASE USER ADDRESS METHOD
+local  all      all          peer
+```
+
+to 
+```{bash, eval = F}
+# TYPE DATABASE USER ADDRESS METHOD
+local  all      all          md5
+```
+
+**Pay attention to the details of the above lines.** I changed a similar but different line in the config file,
+```{bash, eval = F}
+local   all   postgres        md5
+```
+
+which led this solution to not work and caused an unneeded multi-hour search into trying to solve the original error. Finally restart postgresql with `sudo service postgresql restart`
+
+# Load Data into Database
+
+Now that everything is finally set up we can load data into the remote database. I previously had a few spatial layers stored in a geopackage (*which actually works pretty well for this type of application*).
 
 ```{r, eval=F}
 # get all layers
@@ -47,44 +109,53 @@ layers <- st_layers("../../tree_map/dat/data.gpkg")
 lays <- sapply(layers$name, function(x) read_sf("../../tree_map/dat/data.gpkg", layer = x))
 ```
 
-# Create connection and write layers
-```{r}
-con <- dbConnect(RPostgreSQL::PostgreSQL(),
-     , host=Sys.getenv("postgre_ip")
-     , port='5432'
-     , dbname='parks'
-     , user='max'
+Create the connection to the database we just set up.
+
+```{r, eval=F}
+con <- dbConnect(PostgreSQL(),
+     , host = Sys.getenv("postgre_ip")
+     , port = '5432'
+     , dbname = 'parks'
+     , user = 'max'
      , password = Sys.getenv("postgre_pswd"))
 
+# list the current tables
+# This should return just a default spatial reference layer created by Postgis
 dbListTables(con)
 ```
 
+### A note about .Renviron
+You'll notice the use of `Sys.getenv()` for the host name and password. This has two uses in the database connection.
+1) It's a bad idea to store a password in open code that anyone can read. I have a `.Renviron` file, that is not tracked with git, in my Rproject folder that contains variables 'postgre_ip' and 'postgre_pswd'. The `Sys.getenv()` calls these variables so they never need to written out. This is also useful for API keys.
+
+2) Since I am developing locally and running the app from a VM I can use this method have different login information for my server. On the server I have a different `.Renviron`,again not tracked by git, which has a different IP address. I could also vary the user and password if there were permissions I wanted to track.
+
+**Note:** The `.Renviron` file that gets loaded by shiny-server is in `/home/shiny/` as opposed to the Rproject folder. There may be a way to change this.
+
+If you use the `.Renviron` method make sure to restart shiny server since it reads that file on boot.
+```{bash}
+sudo restart shiny-server
+```
+
+
+Once the connection is set up you can write files to the database directly with the `sf` package
 
 ```{r}
 # Write each file
-# st_write(obj = lays[["park"]], dsn = con, drop = T, layer = "park")
-# st_write(obj = lays[["neigh"]], dsn = con, layer = "neigh")
-# st_write(obj = lays[["portland"]], dsn = con, layer = "portland")
-# st_write(obj = lays[["park_trees"]], dsn = con, layer = "park_trees")
+st_write(obj = lays[["park"]], dsn = con, drop = T, layer = "park")
+st_write(obj = lays[["neigh"]], dsn = con, layer = "neigh")
+st_write(obj = lays[["portland"]], dsn = con, layer = "portland")
+st_write(obj = lays[["park_trees"]], dsn = con, layer = "park_trees")
 
 # check tables
 dbListTables(con)
 ```
 
 ## Test Connection
+
 Read a file just to make sure everything works
 
 ```{r}
 read_sf(con, "portland")
 ```
-
-# Deploy to Shiny Server
-
-- Create .Renviron
-- Place in /home/shiny/
-- Change peer authentication to md5 for local users
-- Change file locate `pg_hba.conf`
-https://stackoverflow.com/questions/18664074/getting-error-peer-authentication-failed-for-user-postgres-when-trying-to-ge
-- Restart shiny server
-
 
