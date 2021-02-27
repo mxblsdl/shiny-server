@@ -98,7 +98,7 @@ ui <- material_page(
     
     # switch not doing anything right now
     material_card(title = "Postgres",
-                  HTML("<a href = '../postgres/'>TEster</a>")
+                  HTML("<a href = '../postgres/'>PostgreSQL Setup</a>")
                        )
 
     ), # end the side nav html
