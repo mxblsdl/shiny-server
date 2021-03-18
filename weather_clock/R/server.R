@@ -46,7 +46,7 @@ fore_max_min <- function(forecast, startTime, days) {
   # create hours for day
   h_seq <- seq(h_to_mid, h_to_mid + h)
   # extract all temps in those hours
-  temps <- purrr::map_dfc(h_seq, ~ unlist_forecast(forecast, .x)$temperature)
+  temps <- purrr::map_dfc(h_seq, ~ fore_unlist(forecast, .x)$temperature)
   
   return(list(max(temps), min(temps)))
 }
