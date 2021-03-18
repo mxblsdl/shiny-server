@@ -1,0 +1,328 @@
+---
+title: "Untitled"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(reticulate)
+
+# make sure to set which python
+use_python("usr/bin/python3")
+
+# install api package
+# py_install("noaa-sdk", pip = T)
+
+# Source python function
+source_python("py/forecast.py")
+
+# call observation for zip code
+# Returns six and a half days of weather
+forecast <- get_observations("97218")
+
+# get date and time for given forecast
+get_date_time <- function(starttime) {
+  d <- gsub("(T.*)", "", starttime)
+  t <- gsub("(.*T)", "", starttime)
+  t <- gsub("^([^:]*:[^:]*).*", "\\1", t)
+  return(list(d,t))
+}
+
+# define times for forecast
+times <- c(1,2,3, 24, 48, 72)
+forecast_trim <- forecast[times]
+
+# unlist function
+unlist_forecast <- function(list, n) {
+  unlist(list[n], recursive = F)
+}
+
+# create objects to display
+now <- unlist_forecast(forecast, 1)
+
+now$startTime
+get_date_time(now$startTime)
+
+hour_2 <- unlist_forecast(forecast, 2)
+hour_3 <- unlist_forecast(forecast, 3)
+day_2 <- unlist_forecast(forecast, 4)
+day_3 <- unlist_forecast(forecast, 5)
+day_4 <- unlist_forecast(forecast, 6)
+```
+
+
+```{r eruptions, echo=FALSE}
+options(shiny.autoreload = T)
+
+# time and date display function
+time_display <- function(secs = 0) {
+    format(strptime(gsub(".* ", "", Sys.time()), format='%H:%M:%S') + secs, '%r')
+}
+time_display()
+```
+
+
+
+```{r eruptions, echo=FALSE}
+date_display <- function(days = 0) {
+    sub(".*?-", "", Sys.Date() + days)
+}
+
+# ui functions
+# TODO make sure this refreshes
+dateUI <- function() {
+    fluidRow(id = "date", 
+             Sys.Date(),
+             span(class = "right",
+                  "Last Updated:",
+                  time_display(0)
+             )
+    )
+}
+
+# modules
+iconUI <- function(id) {
+    ns <- NS(id)
+    uiOutput(ns("fore"))
+}
+
+iconServer <- function(id, icon, temp) {
+    moduleServer(id,
+           function(input, output, session) {
+               output$fore <- renderUI({
+                   ns <- session$ns
+                   div(
+                       # TODO add logic here to change icon
+                       tags$i(id = ns("img"),
+                              class = paste(icon, "icon")),
+                       # TODO forecast
+                       span(id = ns("short"), "mostly cloudy"),
+                      # TODO add logic to change temp
+                      # TODO pull in units
+                        div(id = ns("tem"), 
+                            temp, 
+                            HTML("<span>F&#176;</span>"))
+                   )
+               })  
+           })
+}
+
+library(shiny)
+library(reticulate)
+
+# make sure to set which python
+use_python("usr/bin/python3")
+
+# install api package
+# py_install("noaa-sdk", pip = T)
+
+# Source python function
+source_python("forecast.py")
+
+# call observation for zip code
+# Returns six and a half days of weather
+forecast <- get_observations("97218")
+
+# get date and time for given forecast
+get_date_time <- function(starttime) {
+    d <- gsub("(T.*)", "", starttime)
+    t <- gsub("(.*T)", "", starttime)
+    t <- gsub("^([^:]*:[^:]*).*", "\\1", t)
+    return(list(d,t))
+}
+
+# define times for forecast
+times <- c(1,2,3, 24, 48, 72)
+# forecast_trim <- forecast[times]
+
+# unlist function
+fore_unlist <- function(list, n) {
+    unlist(list[n], recursive = F)
+}
+
+# select icon function
+# TODO add as needed
+fore_icon <- function(fore) {
+      return(
+        switch(fore,
+           "Partly Cloudy" = "bi-cloud-sun",
+           "Mostly Cloudy" = "bi-cloudy",
+           "Cloudy" = "bi-clouds",
+           "Slight Chance Rain Showers" = "bi-cloud-drizzle",
+           "Chance Light Rain" = "bi-cloud-drizzle",
+           "Rain Showers Likely" = "bi-cloud-rain",
+           "Partly Sunny" = "bi-cloud-sun",
+           "Mostly Sunny" = "bi-sun")
+           )
+}
+
+# create objects to display
+now <- unlist_forecast(forecast, 1)
+hour_2 <- unlist_forecast(forecast, 2)
+hour_3 <- unlist_forecast(forecast, 3)
+day_2 <- unlist_forecast(forecast, 24)
+day_3 <- unlist_forecast(forecast, 48)
+day_4 <- unlist_forecast(forecast, 72)
+
+
+# get high low values for 
+fore_max_min <- function(forecast, startTime, days) {
+  # get hours ahead
+  h <- days * 24
+  # extract initial time and convert to number
+  t <- get_date_time(startTime)
+  h_to_mid <- h - as.numeric(gsub(":.*", "", t[[2]]))
+  
+  # create hours for day
+  h_seq <- seq(h_to_mid, h_to_mid + h)
+  # extract all temps in those hours
+  temps <- purrr::map_dfc(h_seq, ~ unlist_forecast(forecast, .x)$temperature)
+  
+  return(list(max(temps), min(temps)))
+}
+
+temp <- fore_max_min(forecast, startTime = now$startTime, days = 3)
+div(temp[[1]])
+
+div(if (is.list(temp)) {
+  HTML(paste(
+    paste("High:", temp[[1]]),
+    "<span>F&#176;</span>",
+    paste("Low:", temp[[2]])
+  ))
+} else {
+  temp
+},
+HTML("<span>F&#176;</span>"))
+```
+
+
+```{r eruptions, echo=FALSE}
+# Define UI for application that draws a histogram
+ui <- fluidPage(
+    # Include bootstrap icons
+    # https://icons.getbootstrap.com/
+    tags$head(
+        tags$link(rel = "stylesheet", href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css")
+    ),
+    # TODO move to css file
+    tags$style(
+        "
+        div{
+        border-color:red;
+        border-style:solid;
+        border-width:1px;
+        }
+        .icon{
+        font-size:4em;
+        }
+        .right{
+        float:right;
+        }
+        #date{
+        margin-left:10px;
+        margin-right:10px;
+        }
+        "
+    ),
+    
+    # Application title
+    titlePanel("Weather Clock"),
+
+    # display date and time
+    dateUI(),
+    
+    # display weather results
+    fluidRow(
+        column(3,
+            h4("Current"),
+            iconUI("now"),
+        ), 
+        column(3,
+               offset = 1,
+               h4(time_display(3600)),
+               iconUI("hour1")),
+        column(3,
+               offset = 1,
+               h4(time_display(7200)),
+               iconUI("hour2"))
+
+    ),
+    fluidRow(
+        column(3,
+               h4(date_display(1)),
+               iconUI("next1")),
+        column(3,
+               offset = 1,
+               h4(date_display(2)),
+               iconUI("next2")),
+        column(3,
+               offset = 1,
+               h4(date_display(3)),
+               iconUI("next3"))
+        )
+)
+ui
+```
+
+
+```{r eruptions, echo=FALSE}
+# Define server logic required to draw a histogram
+server <- function(input, output) {
+    
+  now <- fore_unlist(forecast, 1)
+  hour1 <- fore_unlist(forecast, 2)
+  hour2 <- fore_unlist(forecast, 3)
+  next1 <- fore_unlist(forecast, 24)
+  next2 <- fore_unlist(forecast, 48)
+  next3 <- fore_unlist(forecast, 72)
+  
+  
+  #now$startTime
+  #get_date_time(now$startTime)
+    # TODO add logic for which cloud to pass
+    # TODO add more arguments to module function
+
+    iconServer("now",
+               fore_icon(now$shortForecast),
+               now$temperature)
+    
+    iconServer("hour1", 
+               fore_icon(hour1$shortForecast),
+               hour1$temperature)
+    
+    iconServer("hour2", 
+               fore_icon(hour2$shortForecast),
+               hour2$temperature)
+    
+    # TODO change next day to noon forecast
+    iconServer("next1", 
+               fore_icon(next1$shortForecast),
+               next1$temperature)
+    
+    iconServer("next2", 
+               fore_icon(next2$shortForecast),
+               next2$temperature)
+    
+    iconServer("next3", 
+               fore_icon(next3$shortForecast),
+               next3$temperature)
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+```
+
+```{r tabsets, echo=FALSE}
+
+purrr::map_dfc(1:156, ~ fore_unlist(forecast, .x)$shortForecast) %>%
+  t() %>% 
+  unique()
+
+time_display()
+```
+
