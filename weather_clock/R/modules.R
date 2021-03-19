@@ -12,7 +12,7 @@ iconServer <- function(id, icon, temp, desc) {
                function(input, output, session) {
                  output$fore <- renderUI({
                    ns <- session$ns
-                   div(
+                   div(class = "description",
                      tags$i(id = ns("img"),
                             class = paste(icon, "icon")),
                      span(id = ns("short"), desc),

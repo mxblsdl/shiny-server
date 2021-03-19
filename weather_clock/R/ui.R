@@ -11,9 +11,8 @@ date_display <- function(days = 0) {
 }
 
 # ui functions
-# TODO make sure this refreshes
 dateUI <- function() {
-  fluidRow(id = "date", 
+  fluidRow(id = "date", class = "time", 
            Sys.Date(),
            span(class = "right",
                 "Last Updated:",

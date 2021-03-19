@@ -20,16 +20,17 @@ ui <- fluidPage(
     tags$head(
         tags$link(rel = "stylesheet", href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css")
     ),
+
     # TODO move to css file
     tags$style(
         "
-        # div{
+        h3{
         # border-color:red;
         # border-style:solid;
         # border-width:1px;
-        # }
+        }
         .icon{
-        font-size:4em;
+        font-size:3em;
         }
         .right{
         float:right;
@@ -37,48 +38,65 @@ ui <- fluidPage(
         #date{
         margin-left:10px;
         margin-right:10px;
+        font-size: 2em;
+        }
+        .description {
+        font-size: 1.4em;
+        }
+        body{
+        background-color:#f5f5f5;
+        }
+        * {
+        color: #262626;    
+        }
+        .fore{
+        border-style:solid;
+        border-color:black;
+        border-width:1px;
+        border-radius:5px;
+        margin:0 15px 0 15px;
+        padding: 0 5px 0 5px;
         }
         "
     ),
-    
+
     # Application title
     titlePanel("Weather Clock"),
 
     # display date and time
     uiOutput("timestamp"),
 #    dateUI(),
-    
+
     # display weather results
     fluidRow(
-        column(3,
-            h4("Current"),
+        column(3, class = "fore",
+            h3("Current"),
             iconUI("now"),
         ), 
-        column(3,
-               offset = 1,
-               h4(time_display(3600)),
+        column(3
+               , class = "fore",
+               h3(time_display(3600)),
                iconUI("hour1")),
         column(3,
-               offset = 1,
-               h4(time_display(7200)),
+               class = "fore",
+               h3(time_display(7200)),
                iconUI("hour2"))
 
     ),
     fluidRow(
-        column(3,
-               h4(date_display(1)),
+        column(3, class = "fore",
+               h3(date_display(1)),
                iconUI("next1")),
-        column(3,
+        column(3, class = "fore",
                offset = 1,
-               h4(date_display(2)),
+               h3(date_display(2)),
                iconUI("next2")),
-        column(3,
+        column(3, class = "fore",
                offset = 1,
-               h4(date_display(3)),
+               h3(date_display(3)),
                iconUI("next3"))
         )
 )
-# test
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
@@ -90,11 +108,11 @@ server <- function(input, output, session) {
        output$timestamp <- renderUI(dateUI())
     })
     
-    # Initial forecast
+    #Initial forecast
     forecast <-reactive({
         get_observations("97218")
-        }) 
-    
+        })
+
     # call observation for zip code
     # Returns six and a half days of weather
     forecast <- reactive({
@@ -123,26 +141,26 @@ server <- function(input, output, session) {
                hour1$temperature, 
                desc = hour1$shortForecast)
     
-    iconServer("hour2", 
-               fore_icon(hour2$shortForecast),
-               hour2$temperature,
-               hour2$shortForecast)
-    
+    iconServer("hour2",
+    fore_icon(hour2$shortForecast),
+            hour2$temperature,
+            hour2$shortForecast)
+
     # TODO change next day to noon forecast
     iconServer("next1", 
-               fore_icon(next1$shortForecast),
-               fore_max_min(forecast(), now$startTime, days = 1),
-               next1$shortForecast)
-    
+            fore_icon(next1$shortForecast),
+            fore_max_min(forecast(), now$startTime, days = 1),
+            next1$shortForecast)
+
     iconServer("next2", 
-               fore_icon(next2$shortForecast),
-               fore_max_min(forecast(), now$startTime, days = 2),
-               next2$shortForecast)
-    
+            fore_icon(next2$shortForecast),
+            fore_max_min(forecast(), now$startTime, days = 2),
+            next2$shortForecast)
+
     iconServer("next3", 
-               fore_icon(next3$shortForecast),
-               fore_max_min(forecast(), now$startTime, days = 3),
-               next3$shortForecast)
+            fore_icon(next3$shortForecast),
+            fore_max_min(forecast(), now$startTime, days = 3),
+            next3$shortForecast)
     })
 }
 
