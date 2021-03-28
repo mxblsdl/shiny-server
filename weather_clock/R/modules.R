@@ -19,9 +19,9 @@ iconServer <- function(id, icon, temp, desc) {
                      div(id = ns("tem"), 
                          if(is.list(temp)) {
                        HTML(paste(
-                         paste("High:", temp[[1]]),
-                         "<span>F&#176;</span>",
-                         paste("Low:", temp[[2]])
+                         paste(temp[[1]]),
+                         "<span>F&#176; /</span>",
+                         paste(temp[[2]])
                        ))
                      } else {
                        temp

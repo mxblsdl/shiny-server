@@ -25,10 +25,17 @@ time_display <- function(secs = 0) {
     format(strptime(gsub(".* ", "", Sys.time()), format='%H:%M:%S') + secs, '%r')
 }
 
+
+
 date_display <- function(days = 0) {
     sub(".*?-", "", Sys.Date() + days)
 }
 
+weekdays(Sys.Date())
+```
+
+
+```{r eruptions, echo=FALSE}
 # ui functions
 dateUI <- function() {
     fluidRow(id = "date", 
@@ -111,15 +118,6 @@ fore_icon <- function(fore) {
            "Mostly Sunny" = "bi-sun")
            )
 }
-
-# create objects to display
-# now <- unlist_forecast(forecast, 1)
-# hour_2 <- unlist_forecast(forecast, 2)
-# hour_3 <- unlist_forecast(forecast, 3)
-# day_2 <- unlist_forecast(forecast, 24)
-# day_3 <- unlist_forecast(forecast, 48)
-# day_4 <- unlist_forecast(forecast, 72)
-
 
 # get high low values for 
 fore_max_min <- function(forecast, startTime, days) {

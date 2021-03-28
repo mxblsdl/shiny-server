@@ -30,7 +30,8 @@ fore_icon <- function(fore) {
            "Mostly Sunny" = "bi-sun",
            "Clear" = "bi-moon",
            "Mostly Clear" = "bi-moon",
-           "Light Rain" = "bi-umbrella"
+           "Light Rain" = "bi-umbrella",
+           "Rain Showers" = "bi-cloud-rain"
            )
   )
 }
@@ -50,3 +51,6 @@ fore_max_min <- function(forecast, startTime, days) {
   
   return(list(max(temps), min(temps)))
 }
+
+
+
