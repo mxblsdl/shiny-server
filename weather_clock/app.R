@@ -1,6 +1,7 @@
 
 library(shiny)
 library(reticulate)
+library(waiter)
 
 options(shiny.autoreload = T)
 
@@ -15,6 +16,10 @@ source_python("py/forecast.py")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
+    waiter_use(),
+    waiter_show_on_load(
+        html = spin_wandering_cubes()
+            ),
     # Include bootstrap icons
     # https://icons.getbootstrap.com/
     tags$head(
@@ -22,6 +27,7 @@ ui <- fluidPage(
     ),
 
     # TODO move to css file
+    # TODO keep description in its own box
     tags$style(
         "
         h3{
@@ -54,7 +60,7 @@ ui <- fluidPage(
         border-color:black;
         border-width:1px;
         border-radius:5px;
-        margin:0 15px 0 15px;
+        margin:0 15px 10px 15px;
         padding: 0 5px 0 5px;
         }
         "
@@ -85,22 +91,24 @@ ui <- fluidPage(
     ),
     fluidRow(
         column(3, class = "fore",
-               h3(date_display(1)),
+               h3(date_display(1), weekdays(Sys.Date())),
                iconUI("next1")),
         column(3, class = "fore",
                offset = 1,
-               h3(date_display(2)),
+               h3(date_display(2), weekdays(Sys.Date() + 1)),
                iconUI("next2")),
         column(3, class = "fore",
                offset = 1,
-               h3(date_display(3)),
+               h3(date_display(3), weekdays(Sys.Date() + 2)),
                iconUI("next3"))
         )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-    
+    # waiter_show(
+    #     html = spin_wandering_cubes()
+    # )
     # Initial time
     output$timestamp <- renderUI(dateUI())
     observe({
@@ -108,6 +116,7 @@ server <- function(input, output, session) {
        output$timestamp <- renderUI(dateUI())
     })
     
+
     #Initial forecast
     forecast <-reactive({
         get_observations("97218")
@@ -146,7 +155,7 @@ server <- function(input, output, session) {
             hour2$temperature,
             hour2$shortForecast)
 
-    # TODO change next day to noon forecast
+    # Next three days
     iconServer("next1", 
             fore_icon(next1$shortForecast),
             fore_max_min(forecast(), now$startTime, days = 1),
@@ -161,7 +170,9 @@ server <- function(input, output, session) {
             fore_icon(next3$shortForecast),
             fore_max_min(forecast(), now$startTime, days = 3),
             next3$shortForecast)
+    waiter_hide()
     })
+
 }
 
 # Run the application 
