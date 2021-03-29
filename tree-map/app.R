@@ -11,6 +11,7 @@ library(sf)
 library(dplyr)
 library(ggplot2)
 library(scales)
+library(g2r)
 
 library(odbc)
 library(DBI)
@@ -36,31 +37,20 @@ dbDisconnect(con)
 
 # plot function
 trees_plot <- function(df, val) {
-  gg_df <- ggplot(df) +
-    geom_bar(aes(x = reorder(MAPLABEL, .data[[val]]) ,
-                 y = .data[[val]],
-                 fill = .data[[val]]
-    ),
-    stat = "identity") +
-    theme_classic() +
-    labs(x = element_blank()) +
-    scale_y_continuous(labels = comma) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
-          panel.background = element_rect(fill = "#f0f0f0"),
-          plot.background = element_rect(fill = "#f0f0f0")) +
-    scale_x_discrete(labels = function(x) gsub("d I", 'd\nI', x)) +
-    theme(legend.position = "none")
-  
-  gg_df + labs(y = switch(val, 
+  g2 <- g2(df, asp(x = MAPLABEL,
+              , y = .data[[val]],
+              color = .data[[val]])) %>% 
+    fig_interval() %>% 
+    gauge_color_rdylbu() %>%
+    legend_color(F)
+
+  g2 %>% axis_title_y(title = switch(val, 
                  "n_trees" = "Total Trees",
-                 "trees_per_acre" = "Trees Per Acre"))
+                 "trees_per_acre" = "Trees Per Acre"), fontSize = 18)
 }
 
-# TODO change .Renviron to correct IP address of db
-# TODO write up description of project a bit
 # Include postgres setup 
 # TODO change switch to be total or fruit/nut
-
 
 ui <- material_page(
 
@@ -138,7 +128,8 @@ ui <- material_page(
       # main dashboard outputs
       material_row(id = "plots",
                    material_column(class = "center", width = 5, offset = 1,
-                                   plotOutput("plot1")
+                                   #plotOutput("plot1")
+                                   g2Output("plot1")
                                    ),
                    material_column(class = "center", width = 6,
                                    leafletOutput("dash-map",
@@ -185,13 +176,15 @@ server <- function(input, output, session) {
   
   # plot of number of trees next to map of neighborhoods colored by number of trees
   # toggle changes per acre to gross values
-  output$plot1 <- renderPlot({
+  # output$plot1 <- renderPlot({
+  output$plot1 <- renderG2({
     graph_size <- input$graph
     val <- t()
     plot_data  <- neigh %>% 
         arrange(desc(.data[[val]])) %>% 
         slice(1:graph_size) %>% 
-        mutate(MAPLABEL = factor(MAPLABEL))
+        mutate(MAPLABEL = factor(MAPLABEL)) %>% 
+        as.data.frame()
     
     # create plot
     trees_plot(plot_data, val)

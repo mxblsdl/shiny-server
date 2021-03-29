@@ -229,11 +229,31 @@ plotf(neigh, "trees_per_acre")
 
 
 ```{r}
-neigh %>% 
+library(g2r)
+val
+pl <- function(df, val) {
+ df %>% 
   as.data.frame() %>% 
   arrange(desc( !!sym(val) )) %>% 
   slice(1:5) %>% 
   mutate(MAPLABEL = factor(MAPLABEL)) %>% 
+  arrange( !!sym(val) ) %>% 
+  g2() %>% 
+  fig_interval(asp(x = MAPLABEL,
+                   y = .data[[val]],
+                   color = .data[[val]])) %>% 
+  gauge_color_rdylbu() %>% 
+  legend_color(F) %>% 
+  axis_title_y(title = val, fontSize = 18) 
+}
+
+
+pl(neigh, "trees_per_acre")
+```
+
+
+```{r}
+#%>% 
 ggplot() +
    geom_bar(aes(x = reorder(MAPLABEL, !!sym(val)) ,
                 y = !!sym(val),
