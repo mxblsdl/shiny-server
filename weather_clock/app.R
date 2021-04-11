@@ -91,15 +91,15 @@ ui <- fluidPage(
     ),
     fluidRow(
         column(3, class = "fore",
-               h3(date_display(1), weekdays(Sys.Date())),
+               h3(date_display(1), weekdays(Sys.Date() + 1)),
                iconUI("next1")),
         column(3, class = "fore",
                offset = 1,
-               h3(date_display(2), weekdays(Sys.Date() + 1)),
+               h3(date_display(2), weekdays(Sys.Date() + 2)),
                iconUI("next2")),
         column(3, class = "fore",
                offset = 1,
-               h3(date_display(3), weekdays(Sys.Date() + 2)),
+               h3(date_display(3), weekdays(Sys.Date() + 3)),
                iconUI("next3"))
         )
 )
