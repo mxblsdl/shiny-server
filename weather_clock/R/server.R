@@ -28,6 +28,7 @@ fore_icon <- function(fore) {
            "Rain Showers Likely" = "bi-cloud-rain",
            "Partly Sunny" = "bi-cloud-sun",
            "Mostly Sunny" = "bi-sun",
+           "Summy" = "bi-sun",
            "Clear" = "bi-moon",
            "Mostly Clear" = "bi-moon",
            "Light Rain" = "bi-umbrella",
