@@ -17,7 +17,7 @@ Its worth going back to how this project started to get a sense of the use case 
 
 I originally wanted to code this dashboard entirely in Python. As a way to become more competent in Python. I started with the API call to get the actual data that I would need to display. This led me to the very intuitive [`noaa-sdk`](https://pypi.org/project/noaa-sdk/) package.
 
-Next I needed an interface to the data. I looked into [`tkinter`](https://docs.python.org/3/library/tkinter.html) and [`PyQt 5`](https://pypi.org/project/PyQt5/), but mostly became overwhelmed at their structure. `PyQt 5` has its own GUI to make GUI's and I just wasn't interested in a no-code solution. The value in learning one of these frameworks didn't seem like it was worth the time needed to invest.
+Next I needed an interface to the data. I looked into [`tkinter`](https://docs.python.org/3/library/tkinter.html) and [`PyQt 5`](https://pypi.org/project/PyQt5/), but mostly became overwhelmed at their structure. `QtPy 5` has its own GUI to make GUI's and I just wasn't interested in a no-code solution. The value in learning one of these frameworks didn't seem like it was worth the time needed to invest.
 
 I decided to pivot to Shiny because I know it fairly well and genuinely enjoy making things with it. Switching to Shiny made the project fun for me rather than tedious and tedious projects rarely get finished. With this change I could move all of the development off the pi since the app now only needs to display a webpage.
 > *I did think about running R Shiny on the pi and just having the app run locally, but I have access to Shiny Server which made this step a little unnecessary*

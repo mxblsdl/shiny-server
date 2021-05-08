@@ -9,6 +9,7 @@ options(shiny.autoreload = T)
 use_python("usr/bin/python3")
 
 # install api package if needed
+# reticulate::install_miniconda()
 # py_install("noaa-sdk", pip = T)
 
 # Source python function
