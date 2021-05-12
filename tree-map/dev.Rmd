@@ -17,6 +17,33 @@ library(leaflet.providers)
 
 shinyOptions(shiny.autoreload = T)
 ```
+
+
+```{r}
+shinyApp(
+  fluidPage(
+    tags$li(
+  tags$a("Street Trees",
+         href = "https://gis-pdx.opendata.arcgis.com/datasets/street-trees?geometry=-123.198%2C45.452%2C-122.108%2C45.621", 
+         target = "_blank")
+),
+tags$li(
+  tags$a("Park Trees",
+         href = "https://gis-pdx.opendata.arcgis.com/datasets/parks-tree-inventory", 
+         target = "_blank")),
+  tags$li(
+  tags$a("Other Portland Data",
+         href = "https://gis-pdx.opendata.arcgis.com/", 
+         target = "_blank")
+  
+)),
+server <- function(input, output, session) {
+})
+
+
+
+```
+
 ```{r}
 neigh <- read_sf("tree-map/data/data.gpkg", layer = "tree")
 trees <- read_sf("tree-map/data/data.gpkg", layer = "park_trees")
@@ -42,7 +69,8 @@ l <- leaflet(options = leafletOptions(maxZoom = 18, minZoom = 10, zoomControl = 
 l %>%
         addPolygons(data = parks,
                     color = "#a5bda0", 
-                    fill = F) %>% 
+                    fill = "transparent",
+                    popup = parks[["NAME"]]) %>% 
   addAwesomeMarkers(data = trees,
     icon = makeAwesomeIcon(
       icon = "tree",
@@ -62,119 +90,11 @@ l %>%
 # define user interface
 ui <-
   material_page(
-    tags$head(
-      tags$style(includeCSS("styles.css")),
-      useShinyjs()
-    ),
-    title = "Portland Urban Forestry", include_nav_bar = T,
-    
-    # Side Bar ----------------------------------------------------------------
-    
-    material_side_nav(
-      fixed = T,
-      material_row( #TODO address large margins, make smaller
-        material_text_box("park-search", 
-                          "Search Parks")
-      ),
-      material_row(
-        material_column(width = 9,
-                        material_dropdown("parks", 
-                                          "Parks",
-                                          choices = park_names, selected = "Select Park"
-                        )),
-        material_column(width = 3,
-                        actionButton("flyPark", "", icon = icon("plane"))
-        )
-      ),
-      #            selectize_mod("sel", "Selectize", park_names, placeholder = "Search for Park"),
-      material_row(
-        material_column(width = 9,
-                        material_dropdown("neigh", 
-                                          "Neighborhoods",
-                                          choices = c("Select Neighborhood", sort(neigh_names)), selected = "Select Park"
-                        )),
-        material_column(width = 3,
-                        actionButton("flyNeigh", "", icon = icon("plane"))
-        )
-      ),
-      material_row(
-        material_column(width = 6,offset = 6,
-                        actionButton("flyHome", "Full View", icon = icon("map"))
-        )
-      )
-    ),
-    
-    # Header Controls ---------------------------------------------------------
-    
-    material_depth(depth = 2,
-                   material_row(id = "treecontrols", title = "", class = "center",
-                                material_column(width = 4, offset = 2,
-                                                switchInput(inputId = "edible-switch", "", value = F, inline = T, onStatus = "success", size = 'mini'),
-                                                disabled(radioButtons("edible", label = "Edible Trees",
-                                                                      choices = c("Fruit", "Nut"),
-                                                                      inline = T))
-                                ),
-                                bsTooltip(id = "treecontrols", title = "Edible trees", trigger = "click",
-                                          placement = "right", options = list(container = "body")),
-                                material_column(width = 4,
-                                                switchInput("value-switch", "", value = F, inline = T, size = 'mini', onStatus = "success"),
-                                                disabled(radioButtons("value", label = "Tree Value",
-                                                                      choiceNames = c("Total", "Per Acre"),
-                                                                      choiceValues = c("val", "val_per_acre"),
-                                                                      inline = T))
-                                )
-                   )
-    ),
-    
-    
-    # Leaflet Map -------------------------------------------------------------
-    # height needs to be set to view window height
-    
-    leafletOutput("map", width = "100%", height = "70vh"), 
-    
-    # Floating Card on top of map (not being used)
-    material_card(id = "card", title = "Most Valuable Parks", 
-                  depth = 3,
-                  divider = T,
-                  plotOutput("valueParks", width = '100%', height = "20vh")),
-    
-    
-    # Plots Below Map -------------------------------------------------------------------
-    
-    # create non-map content
-    material_row(
-      material_column(width = 6,
-                      "Small Parks",
-                      plotOutput("park-small")
-      ),
-      material_column(width = 6,
-                      "Large Parks",
-                      plotOutput("park-large"))
-    )
-    
-    # TODO
-    
-    # what do I want to show?
-    # edible trees, 
-    # Map ####
-    
-    # change map based on total value or value per acre
-    
-    
-    # change map colors based on fruit or nut trees
-    # TODO park trees species #### also map 
-    # most species
-    # Show native or not
-    # TODO figure out to show the park trees, maybe on a certain zoom level??
-    # popup of DBH, Species, annual benefits
-    # 
-    # Graphs ########
-    # horizontal bar graphs show top five and bottom five
-    # scatter showing relationship between park size and number of trees
-    # scatter showing relationship between park sizee and value of trees
-    # Most prominent species 
-    # native versus non-native
-    
+  material_row(
+    material_column(width = 10, 
+                    markdown("Test **Test** test"))
+  )
+  
   )
 
 server <- function(input, output, session) {
@@ -187,44 +107,74 @@ runApp(ui, server)
 
 
 ```{r}
-library(scales)  
 
 neigh <- read_sf("tree-map/data/data.gpkg", layer = "neigh")
-neigh %>% 
-  mutate(MAPLABEL = gsub("Improvement League|Residential League|Neighborhood Network|Foothills League",
-                         "",
-                         MAPLABEL)) %>% 
-  pull(MAPLABEL)
 
-val <- "trees_per_acre"
+colorBy<- "trees_per_acre"
+qs <- 5
 
-neigh %>% 
-  select(!!sym(val)) %>% 
-  arrange(!!sym(val))
+pal <- colorQuantile(palette = 'Blues',
+                       domain = neigh[[colorBy]],
+                       n = qs)
 
-plotf <- function(df, val) {
-  df %>% 
-  as.data.frame() %>% 
-  arrange(desc( .data[[val]] )) %>% 
-  slice(1:5) %>% 
-  mutate(MAPLABEL = factor(MAPLABEL)) %>% 
-ggplot() +
-   geom_bar(aes(x = reorder(MAPLABEL, !!sym(val)) ,
-                y = !!sym(val),
-                fill = !!sym(val)),
-            stat = "identity") +
-  theme_classic() +
-  labs(y = "Number of Trees",
-       x = element_blank()) +
-  scale_y_continuous(labels = comma) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        panel.background = element_rect(fill = '#f7f0d2'),
-        plot.background = element_rect(fill = '#f7f0d2')) +
-  scale_x_discrete(labels = function(x) gsub("d I", 'd\nI', x)) +
-  theme(legend.position = "none")
-}
+qpal_colors <- unique(pal(sort(neigh[[colorBy]]))) # hex codes
+qpal_labs <- quantile(neigh[[colorBy]], seq(0, 1, 1/qs)) %>% 
+  round(2)# depends on n from pal
 
-plotf(neigh, "trees_per_acre")
+qpal_labs <- paste(lag(qpal_labs), qpal_labs, sep = " - ")[-1] # first lag is NA
+
+  
+  # Create pop-up based on switch input
+  valueVar <- switch(colorBy,
+                     "n_trees" = "Number of Trees",
+                     "trees_per_acre" = "Trees per Acre")
+  
+  popup <- glue::glue("<strong> { neigh[['MAPLABEL']] } </strong> <br>
+             {valueVar}: {round(neigh[[colorBy]], 2)}
+             ")    
+
+leaflet(options = leafletOptions(maxZoom = 20,
+                                     minZoom = 10,
+                                     zoomControl = F)) %>%
+      htmlwidgets::onRender("function(el, x) {
+                          L.control.zoom({position: 'topright'}).addTo(this)
+                          }") %>%
+      addProviderTiles(providers$CartoDB.Positron, group = "Default") %>%
+      setView(lng = -122.63,
+              lat = 45.54,
+              zoom = 10) %>%
+      setMaxBounds(lng1 = -122.4,
+                   lat1 = 45.4,
+                   lng2 = -122.8,
+                   lat2 = 45.67) %>%
+      addPolygons(data = neigh, 
+                      stroke = T
+                , weight = 1
+                , fillColor = ~pal(get(colorBy))
+                , color = "white"
+                , dashArray = "2"
+                , fillOpacity = 0.7
+                , popup = popup
+                , highlight = highlightOptions(
+                  weight = 5
+                  , color = "#999"
+                  , dashArray = ""
+                  , fillOpacity = .7
+                  , bringToFront = T)
+                #   weight = 5,
+                #   color = "#666",
+                #   dashArray = "",
+                #   fillOpacity = 0.7,
+                #   bringToFront = TRUE)
+    ) %>% 
+  addLegend("bottomright", 
+            colors = qpal_colors,
+            labels = qpal_labs,
+            title = valueVar
+            )
+
+             # ,values = seq(0,1,.6)
+            
 ```
 
 
@@ -244,86 +194,78 @@ pl <- function(df, val) {
                    color = .data[[val]])) %>% 
   gauge_color_rdylbu() %>% 
   legend_color(F) %>% 
-  axis_title_y(title = val, fontSize = 18) 
+  axis_title_y(title = val, fontSize = 18) %>% 
+  axis_x(label = list(autoRotate = T, 
+                      style = list(fontSize = 20)))
 }
 
 
-pl(neigh, "trees_per_acre")
+#g <- 
+  pl(neigh, "trees_per_acre")
+
+
+g$sizingPolicy
+g
+g$sizingPolicy$padding <- 15
+g$sizingPolicy$defaultHeight <- "100%"
+g$sizingPolicy$browser$defaultHeight <- "100%"
+g
 ```
 
 
 ```{r}
-#%>% 
-ggplot() +
-   geom_bar(aes(x = reorder(MAPLABEL, !!sym(val)) ,
-                y = !!sym(val),
-                fill = !!sym(val)),
-            stat = "identity") +
-  theme_classic() +
-  labs(y = "Number of Trees",
-       x = element_blank()) +
-  scale_y_continuous(labels = comma) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        panel.background = element_rect(fill = '#f7f0d2'),
-        plot.background = element_rect(fill = '#f7f0d2')) +
-  scale_x_discrete(labels = function(x) gsub("d I", 'd\nI', x)) +
-  theme(legend.position = "none")
-```
+material_counter <- function(title, value, color) {
+    div(
+    class = sprintf("boxxy %s", color),
+    h3(class = "boxxy-value", value),
+    p(class = "boxxy-title", title)
+  )
+};
+
+ui <- material_page(
+tags$style("
+  .boxxy{
+  text-align: center;
+  border-left: 6px solid #073b4c;
+  padding: 1em;
+}
+
+.boxxy-title{
+  text-transform: uppercase;
+}
+
+.boxxy-value{
+  font-size: 3em;
+}
+           "),
+
+ 
+material_row(
+  material_column(width = 3, 
+                  material_counter(title = "Trees Surveyed",
+                          value = countupOutput("cnt_park"),
+                          color = "green darken-2")
+),
+  material_column(width = 3,
+                material_counter(title = "Total surveyed neighborhood",
+                        value = countupOutput("cnt_neigh"),
+                        color = "red lighten-4")
+    )
+  )
+)
 
 
-```{r}
-val <- "n_trees"
-val <- "trees_per_acre"
+server <- function(input, output, seesion) {
+  # Count up number of trees
+  output$cnt_park <- renderCountup({
+    countup(count = nrow(trees), start_at = 0)
+  });
 
-pal <- colorQuantile(palette = 'Blues', 
-                   domain = neigh[[val]], 
-                   n = 5)
+  output$cnt_neigh <- renderCountup({
+    countup(sum(neigh[["n_trees"]]), start_at = 0)
+  });
+}
 
-l <- leaflet(options = leafletOptions(maxZoom = 20,
-                                     minZoom = 10,
-                                     zoomControl = F)) %>%
-      htmlwidgets::onRender("function(el, x) {
-                          L.control.zoom({position: 'topright'}).addTo(this)
-                          }") %>% 
-      addProviderTiles(providers$CartoDB.Positron, group = "Default") %>%
-  #    addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>% 
-      setView(lng = -122.63,
-              lat = 45.54,
-              zoom = 10) %>%
-      setMaxBounds(lng1 = -122.4,
-                   lat1 = 45.4,
-                   lng2 = -122.8,
-                   lat2 = 45.67)
-
-popup = paste0("<strong>", neigh[["MAPLABEL"]])
-colorBy <- "n_trees"
-valueVar <- switch(colorBy,
-                   "n_trees" = "Number of Trees",
-                   "trees_per_acre" = "Trees per Acre")
-  
-  popup <- glue::glue("<strong> { neigh[['MAPLABEL']] } </strong> <br>
-             {valueVar}: {neigh[[colorBy]]}
-             ")
-  
-  addPolygons(l, data = neigh, 
-                stroke = T
-                , weight = 1
-                # use get() here
-                , fillColor = ~pal(get(val))
-                , color = "white"
-                , dashArray = "2"
-                , fillOpacity = 0.7
-                ,popup = popup
-                , highlight = highlightOptions(
-                  weight = 5
-                  , color = "#999"
-                  , dashArray = ""
-                  , fillOpacity = .7
-                  , bringToFront = T))
-                #   weight = 5,
-                #   color = "#666",
-                #   dashArray = "",
-                #   fillOpacity = 0.7,
-                #   bringToFront = TRUE)
+shinyApp(ui, server)
 ```
 
