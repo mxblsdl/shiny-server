@@ -71,6 +71,9 @@ ui <- material_page(
 
   # Header ------------------------------------------------------
   tags$style("
+             .switch *{
+             font-size:2em;
+             }
              .switch label .lever {
              background-color:rgba(44, 161, 245, .5);
              }
@@ -91,7 +94,11 @@ ui <- material_page(
              }
              .boxxy-value{
                font-size: 3em;
-             }"),
+             }
+             .legend{
+             text-align:left;
+             }
+             "),
   # JBox
   tags$head(
     tags$script(
@@ -178,7 +185,7 @@ ui <- material_page(
       ),
       
       material_row(id = "controls",
-                   material_column(width = 3,
+                   material_column(width = 4,
                                    material_switch(
                                      input_id = "switch1",
                                      off_label = "Total",
@@ -190,8 +197,9 @@ ui <- material_page(
                                          label = "Neighborhoods",
                                          max_value = 15,
                                          min_value = 3,
-                                         initial_value = 5)),
-                   material_column(class = "right",
+                                         initial_value = 5)
+                     ),
+                   material_column(width = 3, offset = 1,
                                    material_switch(
                                      input_id = "switch2",
                                      off_label = "Fruit",
