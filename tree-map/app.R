@@ -92,6 +92,38 @@ ui <- material_page(
              .boxxy-value{
                font-size: 3em;
              }"),
+  # JBox
+  tags$head(
+    tags$script(
+      src = paste0(
+        "https://cdn.jsdelivr.net/gh/StephanWagner/",
+        "jBox@v1.2.0/dist/jBox.all.min.js"
+      )
+    ),
+    tags$link(
+      rel = "stylesheet",
+      href = paste0(
+        "https://cdn.jsdelivr.net/gh/StephanWagner/",
+        "jBox@v1.2.0/dist/jBox.all.min.css"
+      )
+    ),
+    tags$script(
+      "Shiny.addCustomMessageHandler(
+        type = 'load-notice', function(message) {
+          new jBox('Notice', {
+            id: 'loading',      
+            content: message,
+            closeButton:true,
+            autoClose:3000,
+            color: 'red',
+            stack: false,
+            responsiveHeight:true,
+            animation: 'slide'
+          });
+        });
+      "
+    )
+  ),
   
   title = "PDX Trees",
   nav_bar_fixed = F, 
@@ -248,6 +280,14 @@ ui <- material_page(
 
 server <- function(input, output, session) {
 
+
+  
+  shinyjs::onclick("switch2_switch",
+                   session$sendCustomMessage(
+                     type = "load-notice",
+                     message = "oops, this functionality isn't built yet"
+                   )
+                  )
   # Make part of leaflet to a function
   neigh[is.na(neigh)] <- 0
   
@@ -418,6 +458,15 @@ tree_pop <- glue::glue("<strong> { trees[['Common_name']] } </strong> <br>
       # )
     # }
   )
+  
+  # Create notice when non working switch is set
+  observeEvent(input$switch2, {
+    session$sendCustomMessage(
+      type = "load-notice",
+      message = "oops, this functionality isn't built yet"
+    )
+  }, ignoreInit = T);
+  
   
 }
   
