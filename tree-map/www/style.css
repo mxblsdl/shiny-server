@@ -1,0 +1,36 @@
+ .switch *{
+ font-size:2em;
+ }
+ .switch label .lever {
+ background-color:rgba(44, 161, 245, .5);
+ }
+ .switch label .lever:after {
+ background-color:rgba(44, 161, 245, .9);
+ }
+ .shiny-material-side-nav-tab-content {
+ padding-left:20px;
+ padding-right:20px;
+ }
+ .boxxy{
+   text-align: center;
+   border-left: 6px solid #073b4c;
+   padding: 1em;
+ }
+ .boxxy-title{
+   text-transform: uppercase;
+ }
+ .boxxy-value{
+   font-size: 3em;
+ }
+ .legend{
+ text-align:left;
+ }
+
+ /* React table styles */ 
+ .bar-sort-header[aria-sort='descending'] {
+  box-shadow: inset 0 3px 0 0 #f8bbd0 !important;
+}
+
+.bar-sort-header[aria-sort='ascending'] {
+  box-shadow: inset 0 -3px 0 0 #ec407a !important;
+}

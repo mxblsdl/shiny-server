@@ -15,6 +15,9 @@ library(ggplot2)
 library(leaflet)
 library(leaflet.providers)
 
+library(RPostgreSQL)
+library(DBI)
+library(reactable)
 shinyOptions(shiny.autoreload = T)
 ```
 
@@ -39,16 +42,19 @@ tags$li(
 )),
 server <- function(input, output, session) {
 })
-
-
-
 ```
 
 ```{r}
-neigh <- read_sf("tree-map/data/data.gpkg", layer = "tree")
-trees <- read_sf("tree-map/data/data.gpkg", layer = "park_trees")
-parks <- read_sf("tree-map/data/data.gpkg", layer = "park")
+con <- dbConnect(PostgreSQL(),
+                 , host = Sys.getenv("postgre_ip")
+                 , port = '5432'
+                 , dbname = 'parks'
+                 , user = 'max'
+                 , password = Sys.getenv("postgre_pswd"))
 
+neigh <- read_sf(con, layer = "neigh")
+trees <- read_sf(con, layer = "park_trees")
+parks <- read_sf(con, layer = "park")
 
 l <- leaflet(options = leafletOptions(maxZoom = 18, minZoom = 10, zoomControl = T)) %>%
       htmlwidgets::onRender("function(el, x) {
@@ -84,26 +90,116 @@ l %>%
                                           animate = T)
   )
 ```
- 
- 
+
+# React Table
+
 ```{r}
-# define user interface
-ui <-
-  material_page(
-  material_row(
-    material_column(width = 10, 
-                    markdown("Test **Test** test"))
-  )
+library(htmltools)
+library(stringr)
+
+x = 5
+font = "Helvetica"
+options(shiny.autoreload = T)
+
+max_width <- function(vec) {
+  vec <- strsplit(as.character(vec), "") 
   
-  )
+  vec <- sapply(vec, length)
 
-server <- function(input, output, session) {
-
+  max(vec)
 }
 
-runApp(ui, server)
-```
+# Render a bar chart with a label on the left
+bar_chart <- function(label,
+                      width = "100%",
+                      height = "16px",
+                      fill = "#00bfc4",
+                      background = NULL,
+                      buffer) {
+  bar <- div(style = list(background = fill,
+                          width = width,
+                          height = height, 
+                          float = "left"))
+  chart <- div(style = list(flexGrow = 2,
+                            marginLeft = "8px",
+                            background = background),
+               bar)
+  label <- str_pad(as.character(label), 
+          width = buffer,
+          side = "left",
+          pad = " ")
+  div(style = list(display = "flex",
+                   whiteSpace = "pre-wrap",
+                   alignItems = "center",
+                   fontFamily = "Monospace"),
+      label,
+      chart)
+}
 
+shinyApp(
+  fluidPage(
+    tags$style("
+             .bar-sort-header[aria-sort='descending'] {
+              box-shadow: inset 0 3px 0 0 #f8bbd0 !important;
+            }
+            
+            .bar-sort-header[aria-sort='ascending'] {
+              box-shadow: inset 0 -3px 0 0 #ec407a !important;
+            }
+           "),
+    
+  reactableOutput("reactable")
+
+  ),
+server <- function(input, output, session) {
+  output$reactable <- 
+  renderReactable(
+  reactable(
+  neigh,
+  defaultColDef = colDef(
+    defaultSortOrder = "desc",
+    style = list(`font-family` = font),
+    align = "center",
+    headerStyle = list(background = "#1de9b6", `font-family` = font),
+    minWidth = 8,
+    headerClass = "bar-sort-header"
+  ),
+  columns = list(
+    MAPLABEL = colDef(name = "Neighborhood", 
+                      style = list(`font-size` = 14,
+                                   `font-family` = font),
+                      minWidth = x),
+    fruit = colDef(show = F),
+    nut = colDef(show = F),
+    n_trees = colDef(name = "Trees", cell = function(value) {
+      width <- paste0(value / max(neigh$n_trees) * 100, "%")
+      bar_chart(value,
+                width = width,
+                background = "#eceff1",
+                buffer = max_width(neigh$n_trees))
+      }),
+    acres = colDef(show = F),
+    geom = colDef(show = F),
+    trees_per_acre = colDef("Trees per Acre", 
+                            cell = function(value) {
+      width <- paste0(value / max(neigh$trees_per_acre) * 100, "%")
+      bar_chart(round(value, 1),
+                width = width,
+                fill = "#43a047",
+                background = "#eceff1",
+                buffer = max_width(round(neigh$trees_per_acre, 1)))
+      }
+    )
+  ),
+  bordered = T,
+  highlight = T,
+  showSortIcon = F,
+  paginationType = "simple"
+      )
+    )
+  }
+)
+```
 
 
 ```{r}
