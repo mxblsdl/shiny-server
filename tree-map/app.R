@@ -5,6 +5,7 @@ library(shinyjs)
 library(leaflet)
 library(htmlwidgets)
 library(countup)
+library(reactable)
 # library(shinipsum)
 # library(ggiraph)
 
@@ -37,70 +38,17 @@ parks <- read_sf(con, layer = "park")
 # close connection once data is loaded
 dbDisconnect(con)
 
-# plot function
-trees_plot <- function(df, val) {
-  g2 <- g2(df, asp(x = MAPLABEL,
-              , y = .data[[val]],
-              color = .data[[val]])) %>% 
-    fig_interval() %>% 
-    gauge_color_rdylbu() %>%
-    legend_color(F) %>% 
-    axis_x(label = list(autoRotate = T,
-                        style = list(fontSize = 20)))
-
-  g2 <- g2 %>% axis_title_y(title = switch(val, 
-                 "n_trees" = "Total Trees",
-                 "trees_per_acre" = "Trees Per Acre"), fontSize = 18)
-  
-  g2$sizingPolicy$padding <- 15
-  g2
-};
-
-material_counter <- function(title, value, color) {
-  div(
-    class = sprintf("boxxy %s", color),
-    h3(class = "boxxy-value", value),
-    p(class = "boxxy-title", title)
-  )
-};
-
 # Include postgres setup 
 # TODO change switch to be total or fruit/nut
 
 ui <- material_page(
 
   # Header ------------------------------------------------------
-  tags$style("
-             .switch *{
-             font-size:2em;
-             }
-             .switch label .lever {
-             background-color:rgba(44, 161, 245, .5);
-             }
-             .switch label .lever:after {
-             background-color:rgba(44, 161, 245, .9);
-             }
-             .shiny-material-side-nav-tab-content {
-             padding-left:20px;
-             padding-right:20px;
-             }
-             .boxxy{
-               text-align: center;
-               border-left: 6px solid #073b4c;
-               padding: 1em;
-             }
-             .boxxy-title{
-               text-transform: uppercase;
-             }
-             .boxxy-value{
-               font-size: 3em;
-             }
-             .legend{
-             text-align:left;
-             }
-             "),
-  # JBox
+
   tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = 'style.css'),
+
+    # JBox    
     tags$script(
       src = paste0(
         "https://cdn.jsdelivr.net/gh/StephanWagner/",
@@ -114,22 +62,8 @@ ui <- material_page(
         "jBox@v1.2.0/dist/jBox.all.min.css"
       )
     ),
-    tags$script(
-      "Shiny.addCustomMessageHandler(
-        type = 'load-notice', function(message) {
-          new jBox('Notice', {
-            id: 'loading',      
-            content: message,
-            closeButton:true,
-            autoClose:3000,
-            color: 'red',
-            stack: false,
-            responsiveHeight:true,
-            animation: 'slide'
-          });
-        });
-      "
-    )
+    # Custom JBox
+    tags$script(src = "jbox.js")
   ),
   
   title = "PDX Trees",
@@ -218,8 +152,12 @@ ui <- material_page(
                                                  width = "100%",
                                                  height = "55vh")
                    )
+                ),
+      material_row(id = "table",
+                   material_column(width = 6, offset = 3,
+                                   reactableOutput("reactable")
+                                   )
                    )
-      
     ),
   
   # Second leaflet map ---------------------------------------------
@@ -288,14 +226,13 @@ ui <- material_page(
 
 server <- function(input, output, session) {
 
-
-  
   shinyjs::onclick("switch2_switch",
                    session$sendCustomMessage(
                      type = "load-notice",
                      message = "oops, this functionality isn't built yet"
                    )
-                  )
+                  );
+  
   # Make part of leaflet to a function
   neigh[is.na(neigh)] <- 0
   
@@ -328,6 +265,11 @@ server <- function(input, output, session) {
     trees_plot(plot_data, val)
   })
 
+  # React table
+  output$reactable <- renderReactable(
+    react_table(neigh)
+  )
+  
   # render the basic basemap set to the correct view & zoom
   output$`dash-map` <- renderLeaflet({
     leaflet(options = leafletOptions(maxZoom = 20,
@@ -443,28 +385,7 @@ tree_pop <- glue::glue("<strong> { trees[['Common_name']] } </strong> <br>
                         clusterOptions = markerClusterOptions(spiderfyOnMaxZoom = T,
                                                               showCoverageOnHover = T,
                                                               spiderLegPolylineOptions = "width = 5")
-  )
-  
-  # TODO add event on click
-  # observe({
-    # leafletProxy("map") %>%
-    #   addPolygons(data = parks,
-    #               color = "#a5bda0",
-    #               fill = F,
-    #               popup = paste(parks[["NAME"]]),
-    #               popupOptions = list(className = "pop")) %>%
-    #   addAwesomeMarkers(data = trees,
-    #                     icon = makeAwesomeIcon(
-    #                       icon = "tree",
-    #                       library = "fa",
-    #                       markerColor = "lightgreen",
-    #                       iconColor = "green"
-    #                     ),
-    #                     clusterOptions = markerClusterOptions(spiderfyOnMaxZoom = T,
-    #                                                           showCoverageOnHover = T,
-    #                                                           spiderLegPolylineOptions = "width = 5")
-      # )
-    # }
+    )
   )
   
   # Create notice when non working switch is set
@@ -476,13 +397,7 @@ tree_pop <- glue::glue("<strong> { trees[['Common_name']] } </strong> <br>
   }, ignoreInit = T);
   
   
-}
-  
-
-
-
-
-
+}; # End of server
     
 
 shinyApp(ui, server)
