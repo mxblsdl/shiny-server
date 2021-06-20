@@ -1,0 +1,21 @@
+---
+title: "dev"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(shiny)
+```
+
+
+```{r}
+ui <- fluidPage(
+  div()
+)
+server <- function(input, output, session)
+
+shinyApp(ui, server)
+```
+
