@@ -1,18 +1,16 @@
 ---
 title: "How I Built My Shiny Server"
-output: 
-  html_document:
-    css: "style.css"
-    toc: true
+output: rmdformats::material
 ---
 ```{r setup, include=F}
 knitr::opts_chunk$set(eval = F)
 ```
 
-Notes on my process for getting this site up...
-
 # Shiny server
   - I mostly followed [Dean Attali's](https://deanattali.com/2015/05/09/setup-rstudio-shiny-server-digital-ocean/) blog about how to get RStudio and Shiny server set up. This was the inspiration and guiding document for this project. The steps outlined in Dean's blog get a Digital Ocean linux server setup.
+
+## Remote Development
+I recently started using [VS Code](https://code.visualstudio.com/) as a general text editor for pretty much everything except R. VS Code also makes remote development much easier with [SSH capabilities](https://code.visualstudio.com/docs/remote/ssh). This allows access to the file system through the VS Code interface and opens up VS Code as a text editor as opposed to using native Vim or Nano.
   
 ## Minor Updates
   - I made some updates to the blog, most notably getting the most recent version of R and RStudio Server. I followed the [instructions from Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-install-r-on-ubuntu-20-04) to install the latest version of R. This was a significant change since you are required to add a CRAN repository to your Ubnutu server.
