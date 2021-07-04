@@ -1,0 +1,129 @@
+---
+title: "Streets of Portland"
+author: "Max Blasdel"
+date: '2020-07-23T21:13:14-05:00'
+categories:
+- R
+- Spatial
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/pymjs/pym.v1.js"></script>
+<script src="/rmarkdown-libs/widgetframe-binding/widgetframe.js"></script>
+
+
+<p>The following work flow is inspired by some posts I saw on Reddit visualizing the streets of major cities by their suffixes. I decided to do a version for Portland. I came up with my own workflow for creating these stylized maps with R.</p>
+<p>Data for streets of Portland can be found <a href="https://gis-pdx.opendata.arcgis.com/datasets/streets">on their open data website</a>. This will differ for other cities but most major cities should have open data for various civic categories.</p>
+<p>To find the street data I search on the keyword ‘centerline’ and found what I was looking for quickly.</p>
+<div id="load-libraries" class="section level2">
+<h2>Load Libraries</h2>
+<pre class="r"><code>library(sf) # for spatial manipulation
+library(dplyr) # data wrangling
+library(ggplot2) # visualization and final graphing
+library(leaflet) # interactive widget library
+library(widgetframe) # helps rendering leaflet in markdown
+library(cartography) # color palettes</code></pre>
+</div>
+<div id="find-and-load-data" class="section level2">
+<h2>Find and Load Data</h2>
+<p>You could download the data and source it locally, but the <code>sf</code> package makes it easy to interact with a geojson API. Simply point to the endpoint and load as an sf object.</p>
+<pre class="r"><code>roads &lt;- read_sf(&quot;https://opendata.arcgis.com/datasets/ad5ed4193110452aac2d9485df3298e2_68.geojson&quot;)
+
+# inspect to find columns of interest
+# head(roads)</code></pre>
+<p>It is almost guaranteed that a spatial file you find from an ArcGIS API will have tons of fields you don’t need. I like to drop anything that I won’t need for further analysis.</p>
+<p>After inspecting the data, I find the <code>FTTYPE</code> column. This step will take some digging with different datasets.</p>
+</div>
+<div id="prepare-data" class="section level2">
+<h2>Prepare Data</h2>
+<p>Select only the relevant columns for plotting</p>
+<pre class="r"><code>roads &lt;-
+  roads %&gt;%
+  select(FTYPE)</code></pre>
+<p>Now we need to create the canvas or boundaries of the final plot. City boundaries can be very odd and hard to capture so I’m just going to use a circle around the city center.</p>
+<p>We’ll check the roads data projection and put everything in WGS 84 for simplicity. If you are wondering what WGS 84 is you can read about it <a href="https://en.wikipedia.org/wiki/World_Geodetic_System">here</a>.</p>
+<pre class="r"><code>roads &lt;- st_transform(roads, crs = 4326) # WGS 84</code></pre>
+<p>Now we select a point to center the map around. I played around with this a bit using <a href="https://earth.google.com/web/">Google Earth</a> and chose a point in the Willamette River. Hard pressing with Google Maps will also give you the lat/lon in decimal degrees.</p>
+<pre class="r"><code>portland &lt;- data.frame(y = 45.526104, 
+                       x = -122.666917) %&gt;% 
+            st_as_sf(coords = c(&quot;x&quot;, &quot;y&quot;), 
+                     crs = 4326) # chose the same coordinate system as above</code></pre>
+<p>Create a buffer around the chosen point to clip the road data to. The data should really be in a projected coordinate system but this approach still works. The <code>dist</code> value here is arc degrees which is a difficult unit to use, but its essentially a distance value. Projecting the data to a UTM coordinate system is probably a better approach.</p>
+<p>Check the buffer distance. This was an iterative process to get the <code>dist</code> value correct made easier with <code>{Leaflet}</code>.</p>
+<p>Also note that the package <code>{widgetframe}</code> is being used here to embed the leaflet map into RMarkdown. I haven’t used this package extensively but it fixes a bug where leaflet maps don’t embed properly.</p>
+<pre class="r"><code>buf &lt;- st_buffer(portland, dist = .03)
+
+l &lt;- leaflet(buf) %&gt;%
+  addPolygons() %&gt;% 
+  addTiles()
+
+widgetframe::frameWidget(l, width = &quot;100%&quot;)</code></pre>
+<p><div id="htmlwidget-1" style="width:100%;height:480px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"url":"/post/Stylized-Street-Maps/2020-6-14-Stylized-Street-Maps_files/figure-html//widgets/widget_unnamed-chunk-6.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<em>There may be some warnings about the coordinate system being in lat/long and the distance being in degrees</em></p>
+<p>Crop the roads layer once the buffer area looks good to you.</p>
+<pre class="r"><code>roads &lt;- st_intersection(roads, buf) </code></pre>
+<p>There are lots of suffixes that are not well represented in the data. To keep the legend a reasonable size I’m selecting only the top seven suffixes.</p>
+<pre class="r"><code>top_seven_roads &lt;-
+  roads %&gt;%
+  as.data.frame() %&gt;% # drop geometry column
+  dplyr::count(FTYPE) %&gt;%
+  arrange(desc(n)) %&gt;% # arrange from most to least
+  slice(1:7) %&gt;% # take the top seven
+  pull(FTYPE)
+
+top_seven_roads</code></pre>
+<pre><code>## [1] &quot;AVE&quot;  &quot;ST&quot;   &quot;RAMP&quot; &quot;FWY&quot;  &quot;BLVD&quot; &quot;RD&quot;   &quot; &quot;</code></pre>
+<p>Again to keep the legend a reasonable size we set all other suffixes to ‘Other’. I’m also going to reclass <code>RAMP</code> as other. This is an aesthetic choice since on and off ramps aren’t really roads and I want to keep the legend more manageable.</p>
+<pre class="r"><code>roads &lt;- roads %&gt;%
+    mutate(FTYPE = case_when(FTYPE == &quot;RAMP&quot; ~ &quot;Other&quot;,
+                             FTYPE %in% top_seven_roads ~ FTYPE,
+                                  TRUE ~ &quot;Other&quot;))
+roads$FTYPE %&gt;%
+  unique()</code></pre>
+<pre><code>## [1] &quot; &quot;     &quot;Other&quot; &quot;ST&quot;    &quot;AVE&quot;   &quot;FWY&quot;   &quot;RD&quot;    &quot;BLVD&quot;</code></pre>
+</div>
+<div id="prep-data-for-plotting" class="section level2">
+<h2>Prep data for plotting</h2>
+<p>Create a vector of colors that is associated with each road type and reclassify the characters to factors. This allows the legend to be in the desired order.</p>
+<pre class="r"><code># convert to factor for proper ordering in the final plot
+# There is a tidy way of doing this, this method is more natural for me
+roads$FTYPE &lt;- factor(roads$FTYPE,
+                           levels = c(&quot;AVE&quot;,
+                                      &quot;ST&quot;,
+                                      &quot;FWY&quot;,
+                                      &quot;BLVD&quot;,
+                                      &quot;RD&quot;,
+                                      &quot;PKWY&quot;,
+                                      &quot;Other&quot;))</code></pre>
+</div>
+<div id="plotting" class="section level2">
+<h2>Plotting</h2>
+<p>Plot out the finished product. I put the most time into this part and there are probably other ways to achieve the same results with different ggplot functions. I’ve added comments to help identify what does what. You may have to change the <code>plot.title</code> depending on the output size of the png.</p>
+<p>I used the <code>{cartography}</code> package for colors here and I would say color choice makes a large difference in the final product. There is plenty of room to play around with the output.</p>
+<pre class="r"><code>ggplot() +
+  geom_sf(data = roads,
+          aes(colour = FTYPE), # color by column value
+          show.legend = &quot;point&quot;) + # get legend as circles
+  theme_void() + # remove default gray background
+  theme(legend.position = &quot;bottom&quot;,
+        text = element_text(size = 20)) + # set all text large. Play with this number based on desired img size
+  guides(color = guide_legend(nrow = 2, # have legend all on one line
+                              override.aes = (list(size = 5)))) + # change size of point symbols in legend
+  scale_color_manual(name = &quot;Street Suffix&quot;, # name of legend
+                     values = carto.pal(&quot;pastel.pal&quot;)[seq(1,14,2)]) + # our selected color palette
+  ggtitle(&quot;Portland Roads&quot;) +
+  theme(plot.title = element_text(size = 32))</code></pre>
+<p><img src="/post/Stylized-Street-Maps/2020-6-14-Stylized-Street-Maps_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p><a href="/post/Stylized-Street-Maps/portlandstreets.png">Final Map</a></p>
+</div>
+<div id="save-output" class="section level2">
+<h2>Save output</h2>
+<pre class="r"><code># ggsave(&quot;portlandstreets.png&quot;,
+#        width = 12,
+#        height = 18,
+#        units = &quot;in&quot;, # specify units of above height and width
+#        dpi = 400) # dots per inch</code></pre>
+<p>This workflow creates a nice stylized map of street suffixes for Portland that can be extended to any area where you have road data.</p>
+</div>

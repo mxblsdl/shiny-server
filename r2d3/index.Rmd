@@ -1,0 +1,80 @@
+---
+title: "D3 and Shiny in R Markdown"
+output: html_document
+date: '2020-09-23T21:13:14-05:00'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Purpose
+
+D3 is a popular Javascript library for visualizations. It can also be used to select and change node elements in a webpage. Additionally, there is an R package, [R2D3](https://rstudio.github.io/r2d3/) that allows for D3 code to be run easily in Shiny.
+
+This workflow was adapted from an `HTML` implementation of D3 on an old website I made. I wanted to reuse some of the code because I like the effect that it makes and adapt it to run in `R` and `Shiny`.
+
+### Load Libraries
+
+```{r message=FALSE}
+library(shiny)
+library(r2d3)
+```
+
+### Create Simple Shiny App
+
+**Note that Shiny doesn't run in static R markdown documents!** We are just using shiny as a way to generate HTML code, hence no server function. The D3 code then interacts as javascript the rendered HTML page and we can see the effects. 
+\ The JS code is captured in a separate script that is shown below.
+
+```{r}
+fluidPage(
+  r2d3(script = "d3.js", height = 0),# important to set the height of the D3 script
+  tags$div(style = "background-color: red; height: 200px",
+           id = "one",
+           "Initial Div"),
+  tags$div(style = "height: 0px; opacity: 0; background-color: lightblue",
+           id = "two",
+           "Next Div"),
+  actionButton("btn-one", "Change Div", class = "btn"),
+  actionButton("btn-two", "Change Div Back")
+)
+```
+While the same effect could be achieved with jquery or plain JS it was fun to come up with a usage for D3 that integrates into R Markdown so well.
+\
+Contents of `d3.js`
+```{d3}
+// define height of original div
+var h = d3.select("#one").node().getBoundingClientRect().height;
+var trans = 1000; // define transition time
+
+// select first div element and make it disappear
+d3.select('#btn-one').on("click", () => {
+		d3.select('#one').transition().
+		duration(trans).
+		style("height", 0 + 'px')
+		.style("opacity", 0);
+		
+// Select other div and replace 
+		d3.select('#two').
+		transition().
+		duration(trans).
+		style("height", h + 'px').
+		style("opacity", 1);
+});
+
+// repeat same operation in reverse order
+d3.select('#btn-two').on("click", () => {
+		d3.select('#one').
+		transition().
+		duration(trans).
+		style("height", h + 'px')
+		.style("opacity", 1);
+		
+		d3.select('#two').
+		transition().
+		duration(trans).
+		style("height", 0 + 'px').
+		style("opacity", 0);
+});
+```
+

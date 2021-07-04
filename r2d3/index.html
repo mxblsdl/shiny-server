@@ -1,0 +1,90 @@
+---
+title: "D3 and Shiny in R Markdown"
+output: html_document
+date: '2020-09-23T21:13:14-05:00'
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/r2d3-render/r2d3-render.js"></script>
+<script src="/rmarkdown-libs/webcomponents/webcomponents.js"></script>
+<script src="/rmarkdown-libs/r2d3-binding/r2d3.js"></script>
+<script src="/rmarkdown-libs/d3v5/d3.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/rmarkdown-libs/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/bootstrap/js/bootstrap.min.js"></script>
+<script src="/rmarkdown-libs/bootstrap/shim/html5shiv.min.js"></script>
+<script src="/rmarkdown-libs/bootstrap/shim/respond.min.js"></script>
+
+
+<div id="purpose" class="section level1">
+<h1>Purpose</h1>
+<p>D3 is a popular Javascript library for visualizations. It can also be used to select and change node elements in a webpage. Additionally, there is an R package, <a href="https://rstudio.github.io/r2d3/">R2D3</a> that allows for D3 code to be run easily in Shiny.</p>
+<p>This workflow was adapted from an <code>HTML</code> implementation of D3 on an old website I made. I wanted to reuse some of the code because I like the effect that it makes and adapt it to run in <code>R</code> and <code>Shiny</code>.</p>
+<div id="load-libraries" class="section level3">
+<h3>Load Libraries</h3>
+<pre class="r"><code>library(shiny)
+library(r2d3)</code></pre>
+</div>
+<div id="create-simple-shiny-app" class="section level3">
+<h3>Create Simple Shiny App</h3>
+<p><strong>Note that Shiny doesn’t run in static R markdown documents!</strong> We are just using shiny as a way to generate HTML code, hence no server function. The D3 code then interacts as javascript the rendered HTML page and we can see the effects.
+ The JS code is captured in a separate script that is shown below.</p>
+<pre class="r"><code>fluidPage(
+  r2d3(script = &quot;d3.js&quot;, height = 0),# important to set the height of the D3 script
+  tags$div(style = &quot;background-color: red; height: 200px&quot;,
+           id = &quot;one&quot;,
+           &quot;Initial Div&quot;),
+  tags$div(style = &quot;height: 0px; opacity: 0; background-color: lightblue&quot;,
+           id = &quot;two&quot;,
+           &quot;Next Div&quot;),
+  actionButton(&quot;btn-one&quot;, &quot;Change Div&quot;, class = &quot;btn&quot;),
+  actionButton(&quot;btn-two&quot;, &quot;Change Div Back&quot;)
+)</code></pre>
+<p><div class="container-fluid">
+<div id="htmlwidget-1" style="width:960px;height:0px;" class="r2d3 html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"data":null,"type":"NULL","container":"svg","options":null,"script":"var d3Script = function(d3, r2d3, data, svg, width, height, options, theme, console) {\nthis.d3 = d3;\n\nsvg = d3.select(svg.node());\n/* R2D3 Source File:  d3.js */\n\n// define height of original div\nvar h = d3.select(\"#one\").node().getBoundingClientRect().height;\nvar trans = 1000; // define transition time\n\n// select first div element and make it disappear\nd3.select('#btn-one').on(\"click\", () => {\n\t\td3.select('#one').transition().\n\t\tduration(trans).\n\t\tstyle(\"height\", 0 + 'px')\n\t\t.style(\"opacity\", 0);\n\t\t\n// Select other div and replace \n\t\td3.select('#two').\n\t\ttransition().\n\t\tduration(trans).\n\t\tstyle(\"height\", h + 'px').\n\t\tstyle(\"opacity\", 1);\n});\n\n// repeat same operation in reverse order\nd3.select('#btn-two').on(\"click\", () => {\n\t\td3.select('#one').\n\t\ttransition().\n\t\tduration(trans).\n\t\tstyle(\"height\", h + 'px')\n\t\t.style(\"opacity\", 1);\n\t\t\n\t\td3.select('#two').\n\t\ttransition().\n\t\tduration(trans).\n\t\tstyle(\"height\", 0 + 'px').\n\t\tstyle(\"opacity\", 0);\n});\n};","style":null,"version":5,"theme":{"default":{"background":"#FFFFFF","foreground":"#000000"},"runtime":null},"useShadow":true},"evals":[],"jsHooks":[]}</script>
+<div style="background-color: red; height: 200px" id="one">Initial Div</div>
+<div style="height: 0px; opacity: 0; background-color: lightblue" id="two">Next Div</div>
+<button class="btn btn-default action-button btn" id="btn-one" type="button">Change Div</button>
+<button id="btn-two" type="button" class="btn btn-default action-button">Change Div Back</button>
+</div>
+While the same effect could be achieved with jquery or plain JS it was fun to come up with a usage for D3 that integrates into R Markdown so well.<br />
+Contents of <code>d3.js</code></p>
+<pre class="d3"><code>// define height of original div
+var h = d3.select(&quot;#one&quot;).node().getBoundingClientRect().height;
+var trans = 1000; // define transition time
+
+// select first div element and make it disappear
+d3.select(&#39;#btn-one&#39;).on(&quot;click&quot;, () =&gt; {
+        d3.select(&#39;#one&#39;).transition().
+        duration(trans).
+        style(&quot;height&quot;, 0 + &#39;px&#39;)
+        .style(&quot;opacity&quot;, 0);
+        
+// Select other div and replace 
+        d3.select(&#39;#two&#39;).
+        transition().
+        duration(trans).
+        style(&quot;height&quot;, h + &#39;px&#39;).
+        style(&quot;opacity&quot;, 1);
+});
+
+// repeat same operation in reverse order
+d3.select(&#39;#btn-two&#39;).on(&quot;click&quot;, () =&gt; {
+        d3.select(&#39;#one&#39;).
+        transition().
+        duration(trans).
+        style(&quot;height&quot;, h + &#39;px&#39;)
+        .style(&quot;opacity&quot;, 1);
+        
+        d3.select(&#39;#two&#39;).
+        transition().
+        duration(trans).
+        style(&quot;height&quot;, 0 + &#39;px&#39;).
+        style(&quot;opacity&quot;, 0);
+});</code></pre>
+<div id="htmlwidget-2" style="width:672px;height:480px;" class="r2d3 html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"data":null,"type":"NULL","container":"svg","options":null,"script":"var d3Script = function(d3, r2d3, data, svg, width, height, options, theme, console) {\nthis.d3 = d3;\n\nsvg = d3.select(svg.node());\n// define height of original div\nvar h = d3.select(\"#one\").node().getBoundingClientRect().height;\nvar trans = 1000; // define transition time\n\n// select first div element and make it disappear\nd3.select('#btn-one').on(\"click\", () => {\n\t\td3.select('#one').transition().\n\t\tduration(trans).\n\t\tstyle(\"height\", 0 + 'px')\n\t\t.style(\"opacity\", 0);\n\t\t\n// Select other div and replace \n\t\td3.select('#two').\n\t\ttransition().\n\t\tduration(trans).\n\t\tstyle(\"height\", h + 'px').\n\t\tstyle(\"opacity\", 1);\n});\n\n// repeat same operation in reverse order\nd3.select('#btn-two').on(\"click\", () => {\n\t\td3.select('#one').\n\t\ttransition().\n\t\tduration(trans).\n\t\tstyle(\"height\", h + 'px')\n\t\t.style(\"opacity\", 1);\n\t\t\n\t\td3.select('#two').\n\t\ttransition().\n\t\tduration(trans).\n\t\tstyle(\"height\", 0 + 'px').\n\t\tstyle(\"opacity\", 0);\n});\n};","style":null,"version":5,"theme":{"default":{"background":"#FFFFFF","foreground":"#000000"},"runtime":null},"useShadow":true},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
