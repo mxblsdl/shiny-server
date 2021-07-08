@@ -30,7 +30,7 @@ ui <- fluidPage(theme = shinytheme("superhero"),
                }
                img{
                border-radius:8%;
-               width:400px;
+               width:1 rem;
                height:100%;
                }
 
@@ -41,6 +41,12 @@ ui <- fluidPage(theme = shinytheme("superhero"),
   
   actionButton("reset", "Reload"),
 
+  fluidRow(
+    column(width = 4,
+           div(class = "content",
+               p("Some Content")))
+  ),
+  
   fluidRow(
     column(width = 4,
            console_div('Minimalist Maps',
