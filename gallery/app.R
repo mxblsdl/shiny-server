@@ -89,10 +89,6 @@ ui <- fluidPage(theme = shinytheme("superhero"),
 );
 
 server <- function(input, output, session){
-  shinyjs::runjs("
-
-                 ")
-  
   
 }
 
