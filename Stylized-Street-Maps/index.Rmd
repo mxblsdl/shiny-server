@@ -34,10 +34,24 @@ library(widgetframe)
 You could download the data and source it locally, but the `sf` package makes it easy to interact with a geojson API. Simply point to the endpoint and load as an sf object.
 
 ```{r}
-roads <- read_sf("https://opendata.arcgis.com/datasets/ad5ed4193110452aac2d9485df3298e2_68.geojson")
+con <- dbConnect(RPostgreSQL::PostgreSQL(),
+     , host=Sys.getenv("postgre_ip")
+     , port='5432'
+     , dbname='parks'
+     , user='max'
+     , password = Sys.getenv("postgre_pswd"))
+
+roads <- read_sf(con, "roads")
+
+dbDisconnect(con)
+```
+
+I'm reading the roads obj from a cleaned database file to reduce
+```{r}
+# roads <- read_sf("https://opendata.arcgis.com/datasets/ad5ed4193110452aac2d9485df3298e2_68.geojson")
 
 # inspect to find columns of interest
-# head(roads)
+head(roads)
 ```
 
 It is almost guaranteed that a spatial file you find from an ArcGIS API will have tons of fields you don't need. I like to drop anything that I won't need for further analysis. 
@@ -48,7 +62,7 @@ After inspecting the data, I find the `FTTYPE` column. This step will take some 
 
 Select only the relevant columns for plotting
 
-```{r}
+```{r eval=F}
 roads <-
   roads %>%
   select(FTYPE)
@@ -58,7 +72,7 @@ Now we need to create the canvas or boundaries of the final plot. City boundarie
 
 We'll check the roads data projection and put everything in WGS 84 for simplicity. If you are wondering what WGS 84 is you can read about it [here](https://en.wikipedia.org/wiki/World_Geodetic_System).
 
-```{r}
+```{r eval=F}
 roads <- st_transform(roads, crs = 4326) # WGS 84
 ```
 
@@ -89,7 +103,7 @@ widgetframe::frameWidget(l, width = "100%")
 
 Crop the roads layer once the buffer area looks good to you.
 
-```{r}
+```{r eval=F}
 roads <- st_intersection(roads, buf) 
 ```
 
