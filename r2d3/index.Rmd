@@ -1,7 +1,10 @@
 ---
 title: "D3 and Shiny in R Markdown"
 output: html_document
-date: '2020-09-23T21:13:14-05:00'
+date: '2020-09-23'
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
 ---
 
 ```{r setup, include=FALSE}

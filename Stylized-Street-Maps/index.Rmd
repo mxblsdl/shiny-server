@@ -1,14 +1,16 @@
 ---
 title: "Streets of Portland"
 author: "Max Blasdel"
-date: '2020-07-23T21:13:14-05:00'
-categories:
-- R
-- Spatial
+date: '2020-07-23'
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: github
 ---
 
-```{r setup, echo=F}
+```{r setup, echo=F, include=FALSE}
 knitr::opts_chunk$set(warning = F, message = F)
+leaflet::leaflet()
 ```
 
 The following work flow is inspired by some posts I saw on Reddit visualizing the streets of major cities by their suffixes. I decided to do a version for Portland. I came up with my own workflow for creating these stylized maps with R.
@@ -24,7 +26,6 @@ library(sf) # for spatial manipulation
 library(dplyr) # data wrangling
 library(ggplot2) # visualization and final graphing
 library(leaflet) # interactive widget library
-library(widgetframe) # helps rendering leaflet in markdown
 library(cartography) # color palettes
 ```
 
@@ -75,14 +76,16 @@ Create a buffer around the chosen point to clip the road data to. The data shoul
 Check the buffer distance. This was an iterative process to get the `dist` value correct made easier with `{Leaflet}`.
 
 Also note that the package `{widgetframe}` is being used here to embed the leaflet map into RMarkdown. I haven't used this package extensively but it fixes a bug where leaflet maps don't embed properly.
-```{r warning=FALSE, message=FALSE}
+```{r warning=FALSE, message=FALSE, results='asis'}
 buf <- st_buffer(portland, dist = .03)
 
-l <- leaflet(buf) %>%
-  addPolygons() %>% 
-  addTiles()
+l <- htmltools::tagList(
+   leaflet(buf) %>%
+     addPolygons() %>% 
+     addTiles()
+) 
 
-widgetframe::frameWidget(l, width = "100%")
+cat(as.character(l))
 ```
 *There may be some warnings about the coordinate system being in lat/long and the distance being in degrees*
 
@@ -157,12 +160,12 @@ ggplot() +
   theme(plot.title = element_text(size = 32))
 ```
 
-[Final Map](/post/Stylized-Street-Maps/portlandstreets.png)
+[Final Map](www/portlandstreets.png)
 
 ## Save output
 
 ```{r eval=F}
-# ggsave("portlandstreets.png",
+# ggsave("www/portlandstreets.png",
 #        width = 12,
 #        height = 18,
 #        units = "in", # specify units of above height and width
