@@ -2,6 +2,7 @@
 title: "Streets of Portland"
 author: "Max Blasdel"
 date: '2020-07-23'
+runtime: shiny_prerendered
 output:
   prettydoc::html_pretty:
     theme: hpstr
@@ -10,7 +11,6 @@ output:
 
 ```{r setup, echo=F, include=FALSE}
 knitr::opts_chunk$set(warning = F, message = F)
-leaflet::leaflet()
 ```
 
 The following work flow is inspired by some posts I saw on Reddit visualizing the streets of major cities by their suffixes. I decided to do a version for Portland. I came up with my own workflow for creating these stylized maps with R.
@@ -26,7 +26,7 @@ library(sf) # for spatial manipulation
 library(dplyr) # data wrangling
 library(ggplot2) # visualization and final graphing
 library(leaflet) # interactive widget library
-library(cartography) # color palettes
+library(widgetframe)
 ```
 
 ## Find and Load Data
@@ -79,13 +79,11 @@ Also note that the package `{widgetframe}` is being used here to embed the leafl
 ```{r warning=FALSE, message=FALSE, results='asis'}
 buf <- st_buffer(portland, dist = .03)
 
-l <- htmltools::tagList(
-   leaflet(buf) %>%
+l <- leaflet(buf) %>%
      addPolygons() %>% 
      addTiles()
-) 
 
-cat(as.character(l))
+widgetframe::frameWidget(l, width = "100%")
 ```
 *There may be some warnings about the coordinate system being in lat/long and the distance being in degrees*
 
@@ -145,6 +143,9 @@ Plot out the finished product. I put the most time into this part and there are 
 I used the `{cartography}` package for colors here and I would say color choice makes a large difference in the final product. There is plenty of room to play around with the output.
 
 ```{r}
+# Define a col pallete
+pal <- c('#c7c9c7','#d5bbcb','#e1b9c1','#afd7c3','#dec8ab','#d8e4be','#b3bea4')
+
 ggplot() +
   geom_sf(data = roads,
           aes(colour = FTYPE), # color by column value
@@ -155,7 +156,7 @@ ggplot() +
   guides(color = guide_legend(nrow = 2, # have legend all on one line
                               override.aes = (list(size = 5)))) + # change size of point symbols in legend
   scale_color_manual(name = "Street Suffix", # name of legend
-                     values = carto.pal("pastel.pal")[seq(1,14,2)]) + # our selected color palette
+                     values = pal) + # our selected color palette
   ggtitle("Portland Roads") +
   theme(plot.title = element_text(size = 32))
 ```
