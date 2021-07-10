@@ -27,6 +27,8 @@ library(dplyr) # data wrangling
 library(ggplot2) # visualization and final graphing
 library(leaflet) # interactive widget library
 library(widgetframe)
+library(odbc)
+library(DBI)
 ```
 
 ## Find and Load Data
