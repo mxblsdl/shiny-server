@@ -46,11 +46,11 @@ server <- function(input, output, session) {
 
 ```{r}
 con <- dbConnect(PostgreSQL(),
-                 , host = Sys.getenv("postgre_ip")
+                 , host = "167.71.158.245"
                  , port = '5432'
-                 , dbname = 'parks'
+                 , dbname = 'temperature'
                  , user = 'max'
-                 , password = Sys.getenv("postgre_pswd"))
+                 , password = 'shiny')
 
 neigh <- read_sf(con, layer = "neigh")
 trees <- read_sf(con, layer = "park_trees")
