@@ -30,14 +30,16 @@ def get_temperature_data(length):
     # Length will be hours and days will just be represented by many hours
 
     time = datetime.now() - timedelta(hours = 7)
-
+    
     # Still need to determine how the length param will work in this
     # One idea is to return a pandas dataframe, but it might be easier to return an R dataframe
     # I have an issue with the time type being included in the where clause
-    return client.query( f"select time, temperature from room_temperature_humidity limit 1;")
+    res = client.query( f"select temperature, humidity from room_temperature_humidity limit 5;")
+    
+    return list(res)
 
     # return client.query( f"select * from room_temperature_humidity where time >= {time};")
 
-# ret = get_temperature_data(7)
-
+ret = get_temperature_data(7)
+print(ret)
 

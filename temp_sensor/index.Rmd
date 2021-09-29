@@ -1,0 +1,62 @@
+---
+title: "Temp Sensor"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(reticulate)
+library(g2r)
+library(shiny)
+
+# Required calls an error if not able to load python
+use_python(python = "/usr/bin/python3",required = T)
+source_python("influx.py")
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Chart A
+
+Testing out calling a python function from markdown
+
+I also want some input buttons that correspond to time frames
+```{r}
+dat <- get_temperature_data(length = 7)
+
+transform_data <- function(d) {
+  d <- unlist(d, recursive = F)
+
+  d <- lapply(d, as.data.frame)
+  
+  d <- do.call(rbind, d)
+  return(d)
+}
+
+dat <- transform_data(dat)
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Chart B
+TODOs
+1) render in nice CSS
+2) Create line chart of temp and humidity
+3) Make responsive to inputs
+```{r}
+input_radio("time", "Select Time Frame", choices = c(1, 3, 5, 7), selected = 1)
+
+```
+
+### Chart C
+
+```{r}
+
+```
+
