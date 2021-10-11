@@ -2,16 +2,14 @@ from influxdb import InfluxDBClient
 from dotenv import load_dotenv
 from os import getenv
 from datetime import datetime, timedelta
-
+import pandas as pd
 
 '''
-Connect to influxDB and return temperature readings from input time ranges
-
-TODOs - figure out how length will get used and calculate a where clause
-TODOs - possible use pandas for the DB query, return format might be better
+Connect to influxDB and return temperature/humidity readings from set number of hours back in time.
+Relies on a .env file which has database connection information
 ''' 
 
-def get_temperature_data(length):
+def get_temperature_data(hours_back):
 
     # Load environment variables for DB auth
     load_dotenv()
@@ -24,22 +22,27 @@ def get_temperature_data(length):
         password = getenv('PASSWD'),
         database = getenv('DB'))
 
-    
-    # This will be how to determine the starting time value to pull from
-    # Need to figure out how to interchange hours and days
-    # Length will be hours and days will just be represented by many hours
+    # calculate how far back to pull data from
+    time = datetime.now().replace(microsecond = 0) - timedelta(hours = hours_back)
 
-    time = datetime.now() - timedelta(hours = 7)
+    res = client.query( f'''
+    select temperature, humidity 
+    from room_temperature_humidity 
+    where time >= '{time}'
+    order by time desc;
+    ''').get_points() # get points makes the results more readable as a DF
     
-    # Still need to determine how the length param will work in this
-    # One idea is to return a pandas dataframe, but it might be easier to return an R dataframe
-    # I have an issue with the time type being included in the where clause
-    res = client.query( f"select temperature, humidity from room_temperature_humidity limit 5;")
-    
-    return list(res)
+    res = pd.DataFrame(res)
 
-    # return client.query( f"select * from room_temperature_humidity where time >= {time};")
+    # Adjust for timezone and round to nearest second
+    res["time"] = pd.to_datetime(res["time"]).dt.tz_convert('America/Los_Angeles').dt.round('1s')
 
-ret = get_temperature_data(7)
+    # convert to fahrenheit
+    res["temperature"] = (res["temperature"] * 9/5) + 32
+
+    return res
+
+# Test running the function
+ret = get_temperature_data(1)
 print(ret)
 
