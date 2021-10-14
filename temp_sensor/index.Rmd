@@ -4,7 +4,6 @@ output:
   flexdashboard::flex_dashboard:
     orientation: rows
     vertical_layout: fill
-    css: www/style.css
     theme:
       version: 4
 runtime: shiny
