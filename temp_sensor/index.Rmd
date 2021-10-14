@@ -26,12 +26,12 @@ use_python(python = "/usr/bin/python3",required = T)
 source_python("py/influx.py")
 
 # return all data points within allotated time frame
-dat <- get_temperature_data(hours_back = 24*30)
-
-# pull out first time stamp
-now <- dat[1, ]
-
-dat <- clean_data(dat, "5 mins")
+# dat <- get_temperature_data(hours_back = 24*30)
+# 
+# # pull out first time stamp
+# now <- dat[1, ]
+# 
+# dat <- clean_data(dat, "5 mins")
 ```
 
 ## Inputs {.sidebar}
