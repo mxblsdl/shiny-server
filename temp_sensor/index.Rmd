@@ -15,13 +15,16 @@ library(reticulate)
 library(g2r)
 library(shiny)
 library(lubridate)
-library(dplyr, include.only = c("group_by", "summarize", "across", "mutate", "filter", "select"))
+library(dplyr)
 
 source("R/g2r.R")
 source("R/clean_data.R")
 
 # Required calls an error if not able to load python
-use_python(python = "/usr/bin/python3",required = T)
+# py_install("influxdb", pip = T)
+# py_install("python-dotenv", pip = T)
+  
+use_python(python = "/usr/bin/python3")
 source_python("py/influx.py")
 
 # return all data points within allotated time frame
