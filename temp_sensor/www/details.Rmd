@@ -1,0 +1,10 @@
+---
+title: "Temp Sensor Details"
+output: rmdformats::material
+---
+
+
+```{r setup, message=FALSE}
+
+```
+

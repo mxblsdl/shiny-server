@@ -1,14 +1,13 @@
 ---
-title: "Temp Sensor"
+title: "Raspberry Pi Temperature Sensor"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
     vertical_layout: fill
-    css: style.css
+    css: www/style.css
     theme:
       version: 4
 runtime: shiny
-
 ---
 
 ```{r global, include=FALSE}
@@ -16,80 +15,98 @@ library(flexdashboard)
 library(reticulate)
 library(g2r)
 library(shiny)
-# library(shinymaterial)
-# source("../tree-map/R/counter.R")
+library(lubridate)
+library(dplyr, include.only = c("group_by", "summarize", "across", "mutate", "filter", "select"))
+
+source("R/g2r.R")
+source("R/clean_data.R")
 
 # Required calls an error if not able to load python
 use_python(python = "/usr/bin/python3",required = T)
-source_python("influx.py")
+source_python("py/influx.py")
 
-dat <- get_temperature_data(length = 7)
+# return all data points within allotated time frame
+dat <- get_temperature_data(hours_back = 24*30)
 
-transform_data <- function(d) {
-  d <- unlist(d, recursive = F)
-  d <- lapply(d, as.data.frame)
-  d <- do.call(rbind, d)
-  return(d)
-}
+# pull out first time stamp
+now <- dat[1, ]
 
-dat <- transform_data(dat)
+dat <- clean_data(dat, "5 mins")
 ```
 
 ```{r setup, include = FALSE, context = "server"}
-bslib::bs_themer()
+# bslib::bs_themer()
 ```
 
-Inputs {.sidebar}
------------------------------------------------------------------------
+## Inputs {.sidebar}
 
-TODOs
-1) render radio button in nice CSS
-2) count up humidity
-3) Add text to counter
-4) 
+TODOs 
+2) implement future for api call
+
 ```{r}
-shiny::radioButtons("time",
-                    "Select Time Frame",
-                    choiceNames = c("3 Hours", "Day", "Week", "Month"),
-                    choiceValues = c(3, 24, 24*7, 24*30),
-                    inline = F
+# Some JS to make buttons act like radio buttons, 
+# could be useful in styling custom radio buttons
+# $('.button').click(function() {
+#    $('.button').removeClass('active');
+#    $(this).addClass('active');
+# });
+shinyWidgets::radioGroupButtons(
+  "time",
+  "Time Frame",
+  selected = 3,
+  size = "xs",
+  direction = "vertical",
+  status = "primary" ,
+  justified = F,
+  choiceNames = c("3H",
+                  "1D",
+                  "1W",
+                  "1M"),
+  choiceValues = c(3,
+                   24,
+                   24 * 7,
+                   24 * 30)
 )
 ```
 
+Add information on the temp sensor
+[How I built this](www/details.Rmd)
 
-Row {.tabset .tabset-fade}
------------------------------------------------------------------------
+
+
+## Row {.tabset .tabset-fade}
 
 ### Temperature
 
-```{r}
+```{r temp graph}
+# Calcualte a stay above time
 renderG2({
   # React to radio inputs
-  d <- dat[1:as.numeric(input$time), ]
+  d <- subset(dat, interval >= now[["time"]] - hours(as.numeric(input$time)) )
   
-  g2(d, asp(time, temperature)) %>% 
-  fig_line()
+  g2plot(d, 'temperature')
 })
 ```
 
 ### Humidity
 
-```{r}
+```{r humidity graph}
 renderG2({
   # React to radio inputs
-  d <- dat[1:as.numeric(input$time), ]
+  d <- subset(dat, interval >= now[["time"]] - hours(as.numeric(input$time)))
   
-  g2(d, asp(time, humidity)) %>% 
-  fig_line()
+  g2plot(d, 'humidity')
 })
 ```
 
-Row
-------------------------------------------------------------------------
+### Info
 
-### Chart C
-1) lighten side color
-2) add shadow around bottom
+I built a temp sensor using a Raspberry Pi and [Adafruit DHT-22](https://www.adafruit.com/product/385) which temperature and humidity records to the Pi with a simple python script.
+
+## Row
+
+### Current Conditions
+
 ```{r}
 fluidRow(column(width = 6,
                 div(
@@ -97,7 +114,7 @@ fluidRow(column(width = 6,
                   p("Current Temperature"),
                   h2(class = "boxxy-value",
                      countup::countup(
-                       dat[1, "temperature"], options = list(useEasing = T,
+                       now[["temperature"]], options = list(useEasing = T,
                                                              suffix = " Degrees")
                      ))
                 ) # end div
@@ -107,7 +124,8 @@ fluidRow(column(width = 6,
                          class = "boxxy",
                          p("Relative Humidity"),
                          h2(class = "boxxy-value",
-                            countup::countup(dat[1, "humidity"], options = list(
+                            countup::countup(
+                              now[["humidity"]], options = list(
                               useEasing = T,
                               suffix = " %"
                             )))
@@ -115,4 +133,3 @@ fluidRow(column(width = 6,
                        ) # end column
 )
 ```
-
