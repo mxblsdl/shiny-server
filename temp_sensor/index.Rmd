@@ -4,8 +4,6 @@ output:
   flexdashboard::flex_dashboard:
     orientation: rows
     vertical_layout: fill
-    theme:
-      version: 4
 runtime: shiny
 ---
 
@@ -48,29 +46,27 @@ TODOs
 #    $('.button').removeClass('active');
 #    $(this).addClass('active');
 # });
-shinyWidgets::radioGroupButtons(
-  "time",
-  "Time Frame",
-  selected = 3,
-  size = "xs",
-  direction = "vertical",
-  status = "primary" ,
-  justified = F,
-  choiceNames = c("3H",
-                  "1D",
-                  "1W",
-                  "1M"),
-  choiceValues = c(3,
-                   24,
-                   24 * 7,
-                   24 * 30)
-)
+# shinyWidgets::radioGroupButtons(
+#   "time",
+#   "Time Frame",
+#   selected = 3,
+#   size = "xs",
+#   direction = "vertical",
+#   status = "primary" ,
+#   justified = F,
+#   choiceNames = c("3H",
+#                   "1D",
+#                   "1W",
+#                   "1M"),
+#   choiceValues = c(3,
+#                    24,
+#                    24 * 7,
+#                    24 * 30)
+# )
 ```
 
 Add information on the temp sensor
 [How I built this](www/details.Rmd)
-
-
 
 ## Row {.tabset .tabset-fade}
 
@@ -131,3 +127,4 @@ I built a temp sensor using a Raspberry Pi and [Adafruit DHT-22](https://www.ada
 #                        ) # end column
 # )
 ```
+
