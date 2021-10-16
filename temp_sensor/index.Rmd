@@ -26,12 +26,12 @@ use_python(python = "/usr/bin/python3")
 source_python("py/influx.py")
 
 # return all data points within allotated time frame
-# dat <- get_temperature_data(hours_back = 24*30)
-# 
-# # pull out first time stamp
-# now <- dat[1, ]
-# 
-# dat <- clean_data(dat, "5 mins")
+dat <- get_temperature_data(hours_back = 24*30)
+
+# pull out first time stamp
+now <- dat[1, ]
+
+dat <- clean_data(dat, "5 mins")
 ```
 
 ## Inputs {.sidebar}
@@ -46,23 +46,23 @@ TODOs
 #    $('.button').removeClass('active');
 #    $(this).addClass('active');
 # });
-# shinyWidgets::radioGroupButtons(
-#   "time",
-#   "Time Frame",
-#   selected = 3,
-#   size = "xs",
-#   direction = "vertical",
-#   status = "primary" ,
-#   justified = F,
-#   choiceNames = c("3H",
-#                   "1D",
-#                   "1W",
-#                   "1M"),
-#   choiceValues = c(3,
-#                    24,
-#                    24 * 7,
-#                    24 * 30)
-# )
+shinyWidgets::radioGroupButtons(
+  "time",
+  "Time Frame",
+  selected = 3,
+  size = "xs",
+  direction = "vertical",
+  status = "primary" ,
+  justified = F,
+  choiceNames = c("3H",
+                  "1D",
+                  "1W",
+                  "1M"),
+  choiceValues = c(3,
+                   24,
+                   24 * 7,
+                   24 * 30)
+)
 ```
 
 Add information on the temp sensor
@@ -74,23 +74,23 @@ Add information on the temp sensor
 
 ```{r temp graph}
 # Calcualte a stay above time
-# renderG2({
-#   # React to radio inputs
-#   d <- subset(dat, interval >= now[["time"]] - hours(as.numeric(input$time)) )
-#   
-#   g2plot(d, 'temperature')
-# })
+renderG2({
+  # React to radio inputs
+  d <- subset(dat, interval >= now[["time"]] - hours(as.numeric(input$time)) )
+
+  g2plot(d, 'temperature')
+})
 ```
 
 ### Humidity
 
 ```{r humidity graph}
-# renderG2({
-#   # React to radio inputs
-#   d <- subset(dat, interval >= now[["time"]] - hours(as.numeric(input$time)))
-#   
-#   g2plot(d, 'humidity')
-# })
+renderG2({
+  # React to radio inputs
+  d <- subset(dat, interval >= now[["time"]] - hours(as.numeric(input$time)))
+
+  g2plot(d, 'humidity')
+})
 ```
 
 ### Info
@@ -102,29 +102,29 @@ I built a temp sensor using a Raspberry Pi and [Adafruit DHT-22](https://www.ada
 ### Current Conditions
 
 ```{r}
-# fluidRow(column(width = 6,
-#                 div(
-#                   class = "boxxy",
-#                   p("Current Temperature"),
-#                   h2(class = "boxxy-value",
-#                      countup::countup(
-#                        now[["temperature"]], options = list(useEasing = T,
-#                                                              suffix = " Degrees")
-#                      ))
-#                 ) # end div
-#                 ), # end column
-#                 column(width = 6,
-#                        div(
-#                          class = "boxxy",
-#                          p("Relative Humidity"),
-#                          h2(class = "boxxy-value",
-#                             countup::countup(
-#                               now[["humidity"]], options = list(
-#                               useEasing = T,
-#                               suffix = " %"
-#                             )))
-#                        ) # end div
-#                        ) # end column
-# )
+fluidRow(column(width = 6,
+                div(
+                  class = "boxxy",
+                  p("Current Temperature"),
+                  h2(class = "boxxy-value",
+                     countup::countup(
+                       now[["temperature"]], options = list(useEasing = T,
+                                                             suffix = " Degrees")
+                     ))
+                ) # end div
+                ), # end column
+                column(width = 6,
+                       div(
+                         class = "boxxy",
+                         p("Relative Humidity"),
+                         h2(class = "boxxy-value",
+                            countup::countup(
+                              now[["humidity"]], options = list(
+                              useEasing = T,
+                              suffix = " %"
+                            )))
+                       ) # end div
+                       ) # end column
+)
 ```
 
