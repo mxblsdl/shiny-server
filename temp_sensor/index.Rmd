@@ -4,6 +4,7 @@ output:
   flexdashboard::flex_dashboard:
     orientation: rows
     vertical_layout: fill
+    css: www/style.css
 runtime: shiny
 ---
 
@@ -50,7 +51,7 @@ shinyWidgets::radioGroupButtons(
   "time",
   "Time Frame",
   selected = 3,
-  size = "xs",
+  size = "normal",
   direction = "vertical",
   status = "primary" ,
   justified = F,
