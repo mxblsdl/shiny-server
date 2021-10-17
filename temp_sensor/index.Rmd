@@ -75,6 +75,7 @@ Add information on the temp sensor
 
 `r now`
 
+
 ## Row {.tabset .tabset-fade}
 
 ### Temperature
