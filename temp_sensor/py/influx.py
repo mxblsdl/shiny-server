@@ -36,7 +36,7 @@ def get_temperature_data(hours_back):
 
     # Adjust for timezone and round to nearest second
     # res["time"] = pd.to_datetime(res["time"]).dt.tz_convert('America/Los_Angeles').dt.round('1s')
-    res["time"] = pd.to_datetime(res["time"], utc=True).dt.tz_convert('America/Los_Angeles').dt.round('1s')
+    res["time"] = pd.to_datetime(res["time"], utc=True).dt.round('1s')
 
     # convert to fahrenheit
     res["temperature"] = (res["temperature"] * 9/5) + 32

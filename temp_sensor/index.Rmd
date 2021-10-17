@@ -32,6 +32,10 @@ source_python("py/influx.py")
 # return all data points within allotated time frame
 dat <- get_temperature_data(hours_back = 24*30)
 
+# convert to West Coast Time
+dat$time <- lubridate::with_tz(dat$time,
+                               tzone = "America/Los_Angeles")
+
 # pull out first time stamp
 now <- dat[1, ]
 
