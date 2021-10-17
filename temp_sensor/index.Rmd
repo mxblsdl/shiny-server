@@ -34,7 +34,7 @@ dat <- get_temperature_data(hours_back = 24*30)
 
 # pull out first time stamp
 now <- dat[1, ]
-
+print(now$time)
 dat <- clean_data(dat, "5 mins")
 ```
 
