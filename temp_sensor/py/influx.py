@@ -23,7 +23,7 @@ def get_temperature_data(hours_back):
         database = getenv('DB'))
 
     # calculate how far back to pull data from
-    time = datetime.now().replace(microsecond = 0) - timedelta(hours = hours_back)
+    time = datetime.utcnow().replace(microsecond = 0) - timedelta(hours = hours_back)
 
     res = client.query( f'''
     select temperature, humidity 
@@ -43,6 +43,6 @@ def get_temperature_data(hours_back):
     return res
 
 # Test running the function
-# ret = get_temperature_data(1)
-# print(ret)
+ret = get_temperature_data(1)
+print(ret)
 
