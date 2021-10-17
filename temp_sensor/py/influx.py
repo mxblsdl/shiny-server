@@ -43,6 +43,6 @@ def get_temperature_data(hours_back):
     return res
 
 # Test running the function
-ret = get_temperature_data(1)
-print(ret)
+# ret = get_temperature_data(1)
+# print(ret)
 
