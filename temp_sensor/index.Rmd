@@ -73,6 +73,8 @@ shinyWidgets::radioGroupButtons(
 Add information on the temp sensor
 [How I built this](../details/)
 
+`r now`
+
 ## Row {.tabset .tabset-fade}
 
 ### Temperature
