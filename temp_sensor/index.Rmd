@@ -38,11 +38,13 @@ dat$time <- lubridate::with_tz(dat$time,
 
 # pull out first time stamp
 now <- dat[1, ]
-print(now$time)
+
 dat <- clean_data(dat, "5 mins")
 ```
 
 ## Inputs {.sidebar}
+
+Near real time temperature and humidity data for my office in NE Portland Oregon.
 
 ```{r}
 # Some JS to make buttons act like radio buttons, 
@@ -70,13 +72,11 @@ shinyWidgets::radioGroupButtons(
 )
 ```
 
-Add information on the temp sensor
+I work in a detached building from the main house which only has a space heater. I wanted to track how the temp changes throughout the day while I'm working.
+
 [How I built this](../details/)
 
-`r now`
-
-
-## Row {.tabset .tabset-fade}
+## Row {.tabset .tabset-fade data-height=700}
 
 ### Temperature
 
@@ -101,9 +101,18 @@ renderG2({
 })
 ```
 
-### Info
+### Details
 
-I built a temp sensor using a Raspberry Pi and [Adafruit DHT-22](https://www.adafruit.com/product/385) which temperature and humidity records to the Pi with a simple python script.
+I built the temp sensor using a Raspberry Pi 3 and [Adafruit DHT-22](https://www.adafruit.com/product/385) which records temperature and humidity to the Pi with a simple python script.
+
+The data is pushed to an InfluxDB on a remote server from the Pi using [Telegraf](https://www.influxdata.com/time-series-platform/telegraf/). This page pulls the data from the database with python and then visualizes through flexdashboard.
+
+There is a separate repo which details the [setup of the pi temp sensor](https://github.com/mxblsdl/dht)
+
+### Office
+
+A shot of my office 
+![office](www/office_small.png)
 
 ## Row
 
