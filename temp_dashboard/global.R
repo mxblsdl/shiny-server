@@ -23,7 +23,7 @@ Sys.getenv("postgre_pswd")
 
 # def get_temperature_data(hours_back, uname, pswd, db)
   
-dat <- get_temperature_data(hours_back = 3, 
+dat <- get_temperature_data(hours_back = 24*30, 
                             uname = Sys.getenv("influx_name"),
                             pswd = Sys.getenv("passwd"),
                             db = Sys.getenv("db"))
