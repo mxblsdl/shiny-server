@@ -19,22 +19,6 @@ console_div <- function(text, link_text = "", link = NULL) {
 ui <- fluidPage(theme = shinytheme("superhero"),
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = 'style.css'),
-    tags$style("
-               .container{
-               margin-left:4rem;
-               margin-right:4rem;
-               width:75%;
-               }
-               .link{
-               margin:1em;
-               }
-               img{
-               border-radius:8%;
-               width:1 rem;
-               height:100%;
-               }
-
-               ")
   ),
   
   useShinyjs(),
@@ -83,6 +67,20 @@ ui <- fluidPage(theme = shinytheme("superhero"),
                        link = "../r2d3/")
     )
   ),
+  
+  fluidRow(
+    column(width = 4,
+           console_div(text = "Temp Sensor Dashboard",
+                       link_text = "Made with a raspberry pi and flexdashboard",
+                       link = "../temp_sensor/")
+    ),
+    # column(width = 4,
+    #        console_div("", 
+    #                    link_text = "",
+    #                    link = "")
+    # )
+  ),
+  
   
   tags$script(src = "script.js")
 

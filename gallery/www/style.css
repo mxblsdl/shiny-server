@@ -39,3 +39,16 @@
     transform: scale(1.2)
   }
   
+ .container{
+  margin-left:4rem;
+  margin-right:4rem;
+  width:75%;
+  }
+  .link{
+  margin:1em;
+  }
+  img{
+  border-radius:8%;
+  width:1 rem;
+  height:100%;
+  }

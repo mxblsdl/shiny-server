@@ -74,8 +74,6 @@ shinyWidgets::radioGroupButtons(
 
 I work in a detached building from the main house which only has a space heater. I wanted to track how the temp changes throughout the day while I'm working.
 
-[How I built this](../details/)
-
 ## Row {.tabset .tabset-fade data-height=700}
 
 ### Temperature
