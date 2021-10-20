@@ -64,7 +64,7 @@ ui <- dashboardPage(
       title = "", 
       # The id lets us use input$tabset1 on the server to find the current tab
       id = "tabs",
-      width = "100%",
+      width = "100%", height = '65%',
       tabPanel("Temperature", g2Output("temp")),
       tabPanel("Humidity", g2Output("humid")),
       tabPanel("Info", includeMarkdown("www/details.md")),
