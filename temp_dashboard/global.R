@@ -4,15 +4,24 @@ library(g2r)
 library(reticulate)
 library(lubridate)
 library(dplyr)
+<<<<<<< HEAD
+=======
+library(promises)
+>>>>>>> add dashboard to dev
 
 ## Head --------------------------------------------------
 use_python(python = "/usr/bin/python3")
 source_python("py/influx_dash.py")
+<<<<<<< HEAD
 # source_python("temp_dashboard/py/influx.py")
+=======
+# source_python("temp_dashboard/py/influx_dash.py")
+>>>>>>> add dashboard to dev
 
 source("R/g2r.R")
 source("R/clean_data.R")
 
+<<<<<<< HEAD
 readRenviron("~/.Renviron")
 
 # return all data points within allotated time frame
@@ -36,3 +45,21 @@ dat$time <- lubridate::with_tz(dat$time,
 now <- dat[1, ]
 
 dat <- clean_data(dat, "5 mins")
+=======
+# def get_temperature_data(hours_back, uname, pswd, db)
+
+prom <- future_promise(get_temperature_data(hours_back = 24*30, 
+                                           uname = Sys.getenv("influx_name"),
+                                           pswd = Sys.getenv("passwd"),
+                                           db = Sys.getenv("db")))
+
+# convert to West Coast Time
+dat <- prom %...>%
+  mutate(time = lubridate::with_tz(time,
+                                   tzone = "America/Los_Angeles")) %...>% 
+  clean_data(., "5 mins")
+
+# pull out first time stamp
+now <- dat %...>% .[1, ]
+
+>>>>>>> add dashboard to dev
