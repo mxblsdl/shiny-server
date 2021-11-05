@@ -5,22 +5,31 @@ library(reticulate)
 library(lubridate)
 library(dplyr)
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 library(promises)
 >>>>>>> add dashboard to dev
+=======
+library(promises)
+>>>>>>> 4a31d614992dce6b225ec9a80a64beef7638cea5
 
 ## Head --------------------------------------------------
 use_python(python = "/usr/bin/python3")
 source_python("py/influx_dash.py")
 <<<<<<< HEAD
+<<<<<<< HEAD
 # source_python("temp_dashboard/py/influx.py")
 =======
 # source_python("temp_dashboard/py/influx_dash.py")
 >>>>>>> add dashboard to dev
+=======
+# source_python("temp_dashboard/py/influx_dash.py")
+>>>>>>> 4a31d614992dce6b225ec9a80a64beef7638cea5
 
 source("R/g2r.R")
 source("R/clean_data.R")
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 readRenviron("~/.Renviron")
 
@@ -46,6 +55,8 @@ now <- dat[1, ]
 
 dat <- clean_data(dat, "5 mins")
 =======
+=======
+>>>>>>> 4a31d614992dce6b225ec9a80a64beef7638cea5
 # def get_temperature_data(hours_back, uname, pswd, db)
 
 prom <- future_promise(get_temperature_data(hours_back = 24*30, 
@@ -62,4 +73,7 @@ dat <- prom %...>%
 # pull out first time stamp
 now <- dat %...>% .[1, ]
 
+<<<<<<< HEAD
 >>>>>>> add dashboard to dev
+=======
+>>>>>>> 4a31d614992dce6b225ec9a80a64beef7638cea5

@@ -87,40 +87,27 @@ ui <- dashboardPage(
 server <- function(input, output) { 
   output$temp <- renderG2({
     # React to radio inputs
-<<<<<<< HEAD
-    d <- subset(dat, interval >= now[["time"]] - hours(as.numeric(input$time)) )
-    
-    g2plot(d, 'temperature')
-=======
     dat %...>% 
       subset(., interval >= Sys.time() - hours(as.numeric(input$time))) %...>% 
       g2plot('temperature')
->>>>>>> add dashboard to dev
+
+    dat %...>% 
+      subset(., interval >= Sys.time() - hours(as.numeric(input$time))) %...>% 
+      g2plot('temperature')
   })
 
   output$humid  <- renderG2({
     # React to radio inputs
-<<<<<<< HEAD
-    d <- subset(dat, interval >= now[["time"]] - hours(as.numeric(input$time)) )
-    
-    g2plot(d, 'humidity')
-=======
     dat %...>% 
       subset(., interval >= Sys.time() - hours(as.numeric(input$time))) %...>%
       g2plot('humidity') 
->>>>>>> add dashboard to dev
   })
   
   # Render the countups
   output$humid_now <- countup::renderCountup({
-<<<<<<< HEAD
-    countup::countup(
-      now[["humidity"]],
-=======
     now %...>%
       pull("humidity") %...>% 
       countup::countup(
->>>>>>> add dashboard to dev
       duration = 8,
       options = list(useEasing = T,
                      suffix = " %") 
@@ -128,14 +115,9 @@ server <- function(input, output) {
   })
   
   output$temp_now <- countup::renderCountup({
-<<<<<<< HEAD
-    countup::countup(
-      now[["temperature"]], 
-=======
     now %...>%
     pull("temperature") %...>% 
     countup::countup(
->>>>>>> add dashboard to dev
       duration = 8, 
       options = list(useEasing = T,
                      suffix = " Degrees")

@@ -14,8 +14,4 @@ clean_data <- function(x, interval) {
     group_by(interval = round_date(time, interval)) %>%
     summarize(across(c(temperature, humidity), mean))
   return(x)
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> add dashboard to dev
