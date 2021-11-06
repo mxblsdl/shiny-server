@@ -89,6 +89,7 @@ ui <- dashboardPage(
 
 server <- function(input, output) { 
   # Load data as promise
+  readRenviron("~/.Renviron")
   prom <- future_promise(get_temperature_data(hours_back = 24*30, 
                                               uname = Sys.getenv("influx_name"),
                                               pswd = Sys.getenv("passwd"),

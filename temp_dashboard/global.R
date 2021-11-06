@@ -15,8 +15,6 @@ source_python("py/influx_dash.py")
 source("R/g2r.R")
 source("R/clean_data.R")
 
-readRenviron("~/.Renviron")
-
 # return all data points within allotated time frame
 Sys.getenv("influx_name")
 Sys.getenv("passwd")
