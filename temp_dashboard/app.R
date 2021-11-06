@@ -89,7 +89,6 @@ ui <- dashboardPage(
 
 server <- function(input, output) { 
   # Load data as promise
-  readRenviron("~/.Renviron")
   prom <- future_promise(get_temperature_data(hours_back = 24*30, 
                                               uname = Sys.getenv("influx_name"),
                                               pswd = Sys.getenv("passwd"),
@@ -100,6 +99,9 @@ server <- function(input, output) {
     mutate(time = lubridate::with_tz(time,
                                      tzone = "America/Los_Angeles")) %...>% 
     clean_data(., "5 mins")
+  
+  # pull out first time stamp
+  now <- dat %...>% .[1, ]
   
   output$temp <- renderG2({
     # React to radio inputs
