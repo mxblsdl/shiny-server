@@ -24,7 +24,7 @@ ui <- dashboardPage(
                      conditionalPanel(
                        'input.menu == "input"',
                        div(id = "t", HTML("Near real time temperature <br>and humidity data for<br> my office in NE Portland Oregon.")),
-                       
+                       verbatimTextOutput("time"),
                        shinyWidgets::radioGroupButtons(
                          "time",
                          "Time Frame",
@@ -88,6 +88,7 @@ ui <- dashboardPage(
 
 
 server <- function(input, output) { 
+  output$time <- renderText(as.character(Sys.time()))
   # Load data as promise
   prom <- future_promise(get_temperature_data(hours_back = 24*30, 
                                               uname = Sys.getenv("influx_name"),
@@ -101,14 +102,10 @@ server <- function(input, output) {
     clean_data(., "5 mins")
   
   # pull out first time stamp
-  now <- dat %...>% .[1, ]
+  now <- dat %...>% tail(., 1)
   
   output$temp <- renderG2({
     # React to radio inputs
-    dat %...>% 
-      subset(., interval >= Sys.time() - hours(as.numeric(input$time))) %...>% 
-      g2plot('temperature')
-
     dat %...>% 
       subset(., interval >= Sys.time() - hours(as.numeric(input$time))) %...>% 
       g2plot('temperature')
