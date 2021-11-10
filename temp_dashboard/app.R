@@ -100,6 +100,8 @@ server <- function(input, output) {
     mutate(time = lubridate::with_tz(time,
                                      tzone = "America/Los_Angeles")) %...>% 
     clean_data(., "5 mins")
+  # another way to deal with this would be to arrange the dat and then take the head
+  # that would be a bit more expressive
   
   # pull out first time stamp
   now <- dat %...>% tail(., 1)
