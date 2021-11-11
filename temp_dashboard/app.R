@@ -87,7 +87,7 @@ ui <- dashboardPage(
 # Server ------------------------------------------------------------------
 
 
-server <- function(input, output) { 
+server <- function(input, output, session) { 
   output$time <- renderText(as.character(Sys.time()))
   # Load data as promise
   prom <- future_promise(get_temperature_data(hours_back = 24*30, 
