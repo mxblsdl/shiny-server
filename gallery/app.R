@@ -74,11 +74,11 @@ ui <- fluidPage(theme = shinytheme("superhero"),
                        link_text = "Made with a raspberry pi and flexdashboard",
                        link = "../temp_sensor/")
     ),
-    # column(width = 4,
-    #        console_div("", 
-    #                    link_text = "",
-    #                    link = "")
-    # )
+    column(width = 4,
+           console_div("Another Temp Sensor",
+                       link_text = "The same data but made with shiny dashboard",
+                       link = "../temp_dashboard/")
+    )
   ),
   
   
