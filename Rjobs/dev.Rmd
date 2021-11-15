@@ -1,0 +1,29 @@
+---
+title: "dev"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(rvest)
+library(reactable)
+```
+
+A POC for scraping the Rstudio community job board and pulling the table of jobs activity.
+
+First set base URL then read and format as table. Currently only reads the top 30 posts since the website is set as a crawler. Need to determine how to read more of these entries.
+
+```{r}
+webpage <- "https://community.rstudio.com/c/jobs/20"
+
+table <- read_html(webpage) %>% 
+  html_table()
+
+table <- table[[1]]
+
+table %>% 
+  select(Topic, Replies, Views, Activity) %>% 
+  mutate(Topic = gsub("\n.*", "", Topic))
+```
+
