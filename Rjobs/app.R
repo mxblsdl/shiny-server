@@ -3,7 +3,12 @@ library(shiny)
 
 source("global.R")
 
+# A full list of Bootstrap variables can be found:
+# https://rstudio.github.io/bslib/articles/bs5-variables.html
 
+# Search for a variable and replace in teh bs_theme_update() function
+
+# Set the background for each Reactable 
 table_bg <- "rgb(240, 240, 240)"
 
 # bs_theme_preview()
