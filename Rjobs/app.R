@@ -8,19 +8,20 @@ table_bg <- "rgb(240, 240, 240)"
 
 # bs_theme_preview()
 th <- bs_theme_update(
-    bs_theme(version = 5, bootswatch = "minty"),
+    bs_theme(version = 5, bootswatch = "materia"),
     bg = "rgb(240, 240, 240)",
     primary = "#6A98CA",
-    secondary = "#BB95CE",
+    # secondary = "#BB95CE",
     heading_font = font_google("Roboto"),
     font_scale = 1.45,
     fg = "#000",
     'grid-gutter-width' = '3rem',
-    'link-color' = "red"
+    'body-text-align' = "center"
+    # 'link-color' = "red"
 )
 
 ## For interactively setting the theme run
-## bs_theme_preview(th)
+# bs_theme_preview(th)
 ## outside of the shiny app
 
 
@@ -40,13 +41,12 @@ ui <- fluidPage(title = "Job Board",
     titlePanel("R Studio Jobs Board Summary"),
 
     # Sidebar with a slider input for number of bins 
-    # sidebarLayout(
         fluidRow(
             column(6,
                 "Snapshot of RStudio job postings by keywords"
             ),
             column(6,
-                actionButton(inputId = "job-link", label = HTML("<a href = 'https://community.rstudio.com/c/jobs/20'>Job Board</a>"), class = "btn")   
+                actionButton(inputId = "job-link", label = HTML("<a href = 'https://community.rstudio.com/c/jobs/20'>Job Board</a>"))   
             )
         ),
 
@@ -55,9 +55,11 @@ ui <- fluidPage(title = "Job Board",
             column(10, offset = 1,
                 reactableOutput("jobs")
                 )
-            )
-        
-    # )
+            ),
+    fluidRow(
+        column(10,
+               "Gives an overview of what keywords are popular in the RStudio job postings board.")
+    )
 )
 
 
