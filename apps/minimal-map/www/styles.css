@@ -1,0 +1,27 @@
+
+#methods{
+border-color: rgb(188, 225, 236);
+border-style: solid;
+border-width: 1px;
+margin: 1ch;
+}
+
+.header {
+cursor: pointer;
+background-color: rgb(197, 226, 235);
+font-size: larger;
+border-radius: 5;
+padding: 7px;
+}
+
+#dropdown1 {
+background-color: rgb(255, 255, 255);
+padding: 7px;
+}
+
+.darkmode-toggle {
+  height:50px;
+  width:50px;
+  font-size:20px;
+  z-index: 100;
+}
