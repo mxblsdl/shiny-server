@@ -51,7 +51,9 @@ ui <- fluidPage(theme = shinytheme("superhero"),
                        link = "../weather_clock/")
            ),
     column(width = 4,
-           console_div("More to Come", link_text = "")
+           console_div("R Jobs Table",
+                       link_text = "Playing around with reactable and sass. Pulls from R Community job postings. Very early development.", 
+                       link = "../Rjobs/")
            )
     ),
   
