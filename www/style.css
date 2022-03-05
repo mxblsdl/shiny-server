@@ -1,0 +1,78 @@
+
+@import url(https://fonts.googleapis.com/css?family=Titillium+Web:900);
+@import url(https://fonts.googleapis.com/css?family=Mr+Dafoe);
+ 
+ .chrome {
+  position: relative;
+  background-image: -webkit-linear-gradient(#378DBC 0%, #B6E8F1 46%, #ffffff 50%, #32120E 54%, #FFC488 58%, #582C11 90%, #EC9B4E 100%);
+  background-image: -moz-linear-gradient(#378DBC 0%, #B6E8F1 46%, #ffffff 50%, #32120E 54%, #FFC488 58%, #582C11 90%, #EC9B4E 100%);
+  background-image: -o-linear-gradient(#378DBC 0%, #B6E8F1 46%, #ffffff 50%, #32120E 54%, #FFC488 58%, #582C11 90%, #EC9B4E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 4px #f5f5f5;
+  font-size: 200px;
+  font-family: 'Titillium Web', sans-serif;
+  font-style: italic;
+  margin: 0;
+  line-height: 1;
+}
+ 
+  .chrome:before {
+    position: relative;
+    left: 0;
+    top: 0;
+    z-index: 10;
+    background-image: -webkit-linear-gradient(-40deg, transparent 0%, transparent 40%, #fff 50%, transparent 60%, transparent 100%);
+    background-image: -moz-linear-gradient(-40deg, transparent 0%, transparent 40%, #fff 50%, transparent 60%, transparent 100%);
+    background-image: -o-linear-gradient(-40deg, transparent 0%, transparent 40%, #fff 50%, transparent 60%, transparent 100%);
+    
+    background-position:-500px 0;
+    -webkit-background-clip: text;
+    -webkit-text-stroke: 0;
+    padding-right: 200px;
+    -webkit-animation-name: chrome_effect;
+    -moz-animation-name: chrome_effect;
+    -webkit-animation-duration: 6s;
+    -moz-animation-duration: 6s;
+    -webkit-animation-delay: 2s;
+    -moz-animation-delay: 2s;
+    -webkit-animation-timing-function: linear;
+    -moz-animation-timing-function: linear;
+    -webkit-animation-iteration-count: infinite;
+    -moz-animation-iteration-count: infinite;
+  }
+
+.dreams {
+  position: relative;
+  margin: 0;
+  font-family: 'Mr Dafoe', cursive;
+  font-size: 200px;
+  color: #F975F7 ;
+  -ms-transform:rotate(-15deg); /* IE 9 */
+  -moz-transform:rotate(-15deg); /* Mozilla */
+  -o-transform:rotate(-15deg); /* Opera */
+  -webkit-transform:rotate(-15deg); /* Safari and Chrome */
+    transform:rotate(-15deg);
+  margin-left: 80px;
+  margin-top: -90px;
+  -webkit-text-stroke: 1px #f008b7;
+  -webkit-filter: drop-shadow(2px 2px 20px #f008b7);
+  z-index: 20;
+}
+
+.header{
+font-size:100px;
+margin-top:1em;
+}
+
+#shiny{
+float:right;
+}
+
+#nav{
+font-size:20px;
+background: rgba(255,255,255,0.1);
+padding: 10px;
+margin-bottom: 5px;
+box-shadow: inset 0 -5px 0 0 grey;
+}
