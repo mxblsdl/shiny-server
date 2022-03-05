@@ -1,7 +1,12 @@
 library(bslib)
 library(shiny)
+library(sass)
 
 source("global.R")
+
+# Compile Sass to Css
+css <- sass(input = sass_file("www/styles.scss"))
+
 
 # A full list of Bootstrap variables can be found:
 # https://rstudio.github.io/bslib/articles/bs5-variables.html
@@ -42,6 +47,8 @@ th <- bs_theme_update(
 ui <- fluidPage(title = "Job Board",
     theme = th,
 
+    # Include the css in the app
+    tags$style(css),
     # Application title
     titlePanel("R Studio Jobs Board Summary"),
 
@@ -101,7 +108,9 @@ server <- function(input, output) {
                                    )
             )
         )
-    })
+    });
+    
+    
 }
 
 # Run the application 
