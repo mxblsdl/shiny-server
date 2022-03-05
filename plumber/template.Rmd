@@ -1,0 +1,35 @@
+---
+title: "R Notebook"
+output: html_document
+params:
+  data: "dep_time"
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+Template report to print out a ggplot with parameterized value. 
+
+Valid values include:
+- sched_dep_time
+- dep_delay
+- arr_time
+- sched_arr_time
+
+```{r, echo=F}
+values <- 
+  nycflights13::flights %>% 
+  group_by(origin) %>%
+  summarize(val = mean(.data[[params$data]], na.rm = T))
+
+
+ggplot(values) +
+  geom_col(aes(x = val, y = origin)) +
+  theme_minimal() +
+  labs(y = "Origin",
+       x = params$data)
+```
+
+
