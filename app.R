@@ -84,7 +84,7 @@ fluidRow(
   column(width = 9, offset = 1,
          div(id = "gallery",
              p(class = "chrome header", "Gallery"),
-             h3(tags$a(href = "../gallery/", "Gallery"))
+             h3(tags$a(href = "gallery/", "Gallery"))
              ))
 ),
 
