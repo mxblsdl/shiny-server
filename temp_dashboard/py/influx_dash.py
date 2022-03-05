@@ -39,6 +39,6 @@ def get_temperature_data(hours_back, uname, pswd, db):
     return res
 
 # Test running the function
-# ret = get_temperature_data(1)
+ret = get_temperature_data(1, 'shiny', 'metrics', 'temperature')
 # print(ret)
 
